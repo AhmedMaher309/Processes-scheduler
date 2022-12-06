@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "headers.h"
 
-struct Process
+
+typedef struct 
 {
     int id;
     int ArrivalTime;
     int RunTime;
     int Priority;
-};
+} Process;
 
