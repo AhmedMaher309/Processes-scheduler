@@ -2,6 +2,8 @@
 
 /* Modify this file as needed*/
 int remainingtime;
+int currentClk = 0;
+
 
 int main(int agrc, char *argv[])
 {
@@ -11,10 +13,26 @@ int main(int agrc, char *argv[])
     //remainingtime = ??;
     while (remainingtime > 0)
     {
-        // remainingtime = ??;
+        initClk();
+        remainingtime = atoi(argv[1]);
+
+        currentClk = getClk();
+        while (remainingtime > 0)
+        {
+
+            // save the currentclk to be always equal to actual clk and reduce the remainingtime
+            if (currentClk < getClk())
+            {
+                currentClk = getClk();
+                remainingtime--;
+            }
+        }
     }
 
     destroyClk(false);
 
     return 0;
 }
+
+
+
