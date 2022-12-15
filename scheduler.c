@@ -3,6 +3,27 @@
 
 // TODO sort queu to arrival time
 
+void SJF()
+{
+    int lastFlag=0;
+    while(!lastFlag)
+    {
+        int queueId=intMsgQueue(QKEY);
+        Process recievedProcess=recievedProcess(queueId);
+        recievedProcess.state=running;
+        printf("startingTime= %d",getClk());
+        if (recievedProcess.state==running)
+        {
+            lastFlag=recievedProcess.flagLast;
+            int pid=fork();
+            if (pid==0)
+                run("process",recievedProcess.remainingTime,NULL);
+        }
+    }    
+
+}
+
+
 int main(int argc, char *argv[])
 {
     initClk();
@@ -29,6 +50,10 @@ int main(int argc, char *argv[])
     
     // destroyClk(true);
 }
+
+
+
+
 
 /*
 void SJF(int *arr){

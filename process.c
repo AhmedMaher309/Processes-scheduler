@@ -1,8 +1,8 @@
 #include "headers.h"
 
 /* Modify this file as needed*/
-int remainingtime;
-int currentClk = 0;
+// int remainingtime;
+// int currentClk = 0;
 
 
 int main(int agrc, char *argv[])
@@ -14,7 +14,7 @@ int main(int agrc, char *argv[])
     while (remainingtime > 0)
     {
         initClk();
-        remainingtime = atoi(argv[1]);
+        remainingtime = atoi(argv[0]);
 
         currentClk = getClk();
         while (remainingtime > 0)

@@ -127,4 +127,7 @@ int main(int argc, char *argv[])
 void clearResources(int signum)
 {
     // TODO Clears all resources in case of interruption
+    //Delete the queue
+    //Destroy the clk
+    //Call clear resources handler instead of destroyClk(true)
 }
