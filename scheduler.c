@@ -5,33 +5,46 @@
 
 void SJF()
 {
-    int lastFlag=0;
-    while(!lastFlag)
+    int lastFlag = 0;
+    fflush(stdout);
+    printf("check this \n");
+    while (!lastFlag)
     {
-        int queueId=intMsgQueue(QKEY);
-        Process recievedProcess=recievedProcess(queueId);
-        recievedProcess.state=running;
-        printf("startingTime= %d",getClk());
-        if (recievedProcess.state==running)
+        int queueId = intMsgQueue(QKEY);
+        Process recievedProcess = recieveProcess(queueId);
+        recievedProcess.state = running;
+        fflush(stdout);
+        printf("startingTime= %d\n", getClk());
+        if (recievedProcess.state == running)
         {
-            lastFlag=recievedProcess.flagLast;
-            int pid=fork();
-            if (pid==0)
-                run("process",recievedProcess.remainingTime,NULL);
+            fflush(stdout);
+            printf("I am in \n");
+            lastFlag = recievedProcess.flagLast;
+            char remain[10];
+            fflush(stdout);
+            sprintf(remain, "%d", recievedProcess.remainingTime);
+            int pid = fork();
+            if (pid == 0)
+            {
+                fflush(stdout);
+                printf("I am the fucking process");
+                run("process", remain, NULL);
+            }
         }
-    }    
-
+    }
 }
-
 
 int main(int argc, char *argv[])
 {
     initClk();
-    printf("This is the scheduler %s \n", argv[0]);
-    int queueId = intMsgQueue(QKEY);
-    Process rProcess = recieveProcess(queueId);
-    printf("arrival time = %d\n", rProcess.arrivalTime);
-    printf("run time = %d\n", rProcess.runTime);
+    // printf("This is the scheduler %s \n", argv[0]);
+    // int queueId = intMsgQueue(QKEY);
+    // Process rProcess = recieveProcess(queueId);
+    // printf("arrival time = %d\n", rProcess.arrivalTime);
+    // printf("run time = %d\n", rProcess.runTime);
+
+    SJF();
+
     // TODO: implement the scheduler.
     // TODO: upon termination release the clock resources.
     sleep(4);
@@ -46,14 +59,10 @@ int main(int argc, char *argv[])
     //          processPid= fork();
     //          if(processPid ==0)
     //          run("process",//send the result of the paramenters of the process)
-    //          
-    
+    //
+
     // destroyClk(true);
 }
-
-
-
-
 
 /*
 void SJF(int *arr){

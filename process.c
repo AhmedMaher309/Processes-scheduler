@@ -4,35 +4,29 @@
 // int remainingtime;
 // int currentClk = 0;
 
-
 int main(int agrc, char *argv[])
 {
     initClk();
 
-    //TODO The process needs to get the remaining time from somewhere
-    //remainingtime = ??;
+    // TODO The process needs to get the remaining time from somewhere
+    // remainingtime = ??;
+
+    int remainingtime = atoi(argv[0]);
+    int intialRemaining = remainingtime;
     while (remainingtime > 0)
     {
         initClk();
-        remainingtime = atoi(argv[0]);
-
-        currentClk = getClk();
-        while (remainingtime > 0)
+        int currentClk = getClk();
+        // save the currentclk to be always equal to actual clk and reduce the remainingtime
+        if (currentClk < getClk())
         {
-
-            // save the currentclk to be always equal to actual clk and reduce the remainingtime
-            if (currentClk < getClk())
-            {
-                currentClk = getClk();
-                remainingtime--;
-            }
+            currentClk = getClk();
+            
+            remainingtime--;
         }
     }
-
+    int waitingTime;
     destroyClk(false);
 
     return 0;
 }
-
-
-

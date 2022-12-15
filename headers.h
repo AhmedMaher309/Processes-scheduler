@@ -49,7 +49,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->priority = priority;
     p->arrivalTime = arrivalTime;
     p->runTime = runTime;
-    p->waitingTime=0;
+    p->waitingTime = 0;
     return p;
 }
 
