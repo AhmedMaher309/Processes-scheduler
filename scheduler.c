@@ -1,20 +1,37 @@
-#include "headers.h"
+//#include "PriorityQueue.h"
 //Header is included in the priority queue
 // TODO sort queu to arrival time
 
 void SJF()
 {
     int lastFlag = 0;
+    int rc;
+    int x;
     fflush(stdout);
     printf("check this \n");
     while (!lastFlag)
     {
+        fflush(stdout);
+        x = getClk();
+        sleep(1);
+        x = getClk();
         int queueId = intMsgQueue(QKEY);
-        Process recievedProcess = recieveProcess(queueId);
-
+        
         //اللي يجيلك هتحطه في البرايورتي كيو وطول ما هي مش فاضية هتديقيو منها 
         //ولو فيها أكتر من اليمنت هتسحب اللي عالوش 
-        //If not empty pop first element 
+        //If not empty pop first element
+
+        struct msqid_ds buf;
+        
+
+        while(message_num != 0){
+            sleep(0.01)
+            Process recievedProcess = recieveProcess(queueId);
+            insert_by_priority(&recievedProcess);
+            rc = msgctl(queueId,IPC_STAT,&buf)
+            message_num = buf.msg_qnum;
+        }
+        recievedProcess=popQueue();
         recievedProcess.state = running;
         fflush(stdout);
         printf("startingTime= %d\n", getClk());
@@ -33,6 +50,7 @@ void SJF()
                 printf("I am the fucking process");
                 run("process", remain, NULL);
             }
+        }
         }
     }
 }

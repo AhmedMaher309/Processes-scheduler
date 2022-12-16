@@ -1,3 +1,7 @@
+#ifndef HEADERS_H
+#define HEADERS_H
+
+
 #include <stdio.h> //if you don't use scanf/printf change this include
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -11,7 +15,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-#include "PriorityQueue.h"
+//#include "PriorityQueue.h"
 
 
 typedef short bool;
@@ -176,3 +180,6 @@ Process recieveProcess(int queueId)
     }
     return msg.process;
 }
+
+
+#endif

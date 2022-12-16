@@ -1,9 +1,6 @@
 #include "headers.h"
-#include "PriorityQueue.h"
 // #include "Process.h"
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+
 
 enum Algorithm
 {
@@ -49,7 +46,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
 
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, clearResources);
+    //signal(SIGINT, clearResources);
     // TODO Initialization
     // 1. Read the input files.
 

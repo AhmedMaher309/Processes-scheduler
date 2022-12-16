@@ -1,18 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "headers.h"
-#define MAX 10
+//#include "headers.h"
+#define MAX 100
 
 struct Process pri_que[MAX];
 int front, rear;
 
 typedef enum { runTime=1, priority=2 } Key;
 
-Key key;
+Key currentKey;
 
 void setKey(Key k)
 {
-    key=k;
+    currentKey=k;
 }
 
 // Function to create an empty priority queue 
@@ -20,7 +18,6 @@ void create()
 {
     front = rear = -1;
 }
-
     
 // Function to insert value into priority queue 
 // assuming high value is the high prioriity
@@ -43,15 +40,21 @@ void insert_by_priority(struct Process* process)
     rear++;
 }
 
+//function to pop first element
+Process popQueue(){
+    Process *temp = pri_que[front];
+    delete_by_priority(pri_que[front].id);
+    return *temp;
+}
     
 // Function to check priority and place element 
 void checkPriority(struct Process *process)
 {
     int i,j;
 
-    if (key==priority)
+    if (currentKey==priority)
     {
-        for (i = 0; i <= rear; i++)
+        for (i = front; i <= rear; i++)
         {
             if (process->priority <= pri_que[i].priority)
             {
@@ -67,7 +70,7 @@ void checkPriority(struct Process *process)
     }
     else
     {
-          for (i = 0; i <= rear; i++)
+          for (i = front; i <= rear; i++)
         {
             if (process->runTime <= pri_que[i].runTime)
             {
