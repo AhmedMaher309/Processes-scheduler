@@ -1,4 +1,5 @@
 #include "headers.h"
+#include "PriorityQueue.h"
 // #include "Process.h"
 #include <stdio.h>
 #include <string.h>
@@ -45,6 +46,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
     fclose(filePtr);
 }
 
+
 int main(int argc, char *argv[])
 {
     signal(SIGINT, clearResources);
@@ -83,9 +85,28 @@ int main(int argc, char *argv[])
         }
         else
         {
+            // if (chosenAlgorithm == SJF)
+            // {
+            //     setKey(runTime);
+            // }
+            // if (chosenAlgorithm == HPF)
+            // {
+            //     setKey(priority);
+            // }
+
+            // create();
+            // for (int i = 0; i < processCount; i++)
+            // {
+            //     insert_by_priority(&processArray[i]);
+            // }
+
             run("scheduler", argv[3], NULL);
         }
     }
+
+
+
+    
 
     //  To get time use this function.
     int x;

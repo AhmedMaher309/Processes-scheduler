@@ -1,6 +1,5 @@
 #include "headers.h"
-#include "Process.h"
-
+//Header is included in the priority queue
 // TODO sort queu to arrival time
 
 void SJF()
@@ -12,13 +11,17 @@ void SJF()
     {
         int queueId = intMsgQueue(QKEY);
         Process recievedProcess = recieveProcess(queueId);
+
+        //اللي يجيلك هتحطه في البرايورتي كيو وطول ما هي مش فاضية هتديقيو منها 
+        //ولو فيها أكتر من اليمنت هتسحب اللي عالوش 
+        //If not empty pop first element 
         recievedProcess.state = running;
         fflush(stdout);
         printf("startingTime= %d\n", getClk());
         if (recievedProcess.state == running)
         {
             fflush(stdout);
-            printf("I am in \n");
+            printf("I entered \n");
             lastFlag = recievedProcess.flagLast;
             char remain[10];
             fflush(stdout);
@@ -42,8 +45,14 @@ int main(int argc, char *argv[])
     // Process rProcess = recieveProcess(queueId);
     // printf("arrival time = %d\n", rProcess.arrivalTime);
     // printf("run time = %d\n", rProcess.runTime);
+    create();
 
-    SJF();
+    if (atoi(argv[0])==SJF)
+    {
+        setKey(runTime);
+        SJF();
+
+    }
 
     // TODO: implement the scheduler.
     // TODO: upon termination release the clock resources.

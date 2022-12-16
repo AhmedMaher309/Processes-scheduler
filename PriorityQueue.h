@@ -5,7 +5,15 @@
 
 struct Process pri_que[MAX];
 int front, rear;
-    
+
+typedef enum { runTime=1, priority=2 } Key;
+
+Key key;
+
+void setKey(Key k)
+{
+    key=k;
+}
 
 // Function to create an empty priority queue 
 void create()
@@ -30,7 +38,7 @@ void insert_by_priority(struct Process* process)
         pri_que[rear] = *process;
         return;
     }    
-    else
+    else 
         checkPriority(process);
     rear++;
 }
@@ -40,19 +48,41 @@ void insert_by_priority(struct Process* process)
 void checkPriority(struct Process *process)
 {
     int i,j;
-    for (i = 0; i <= rear; i++)
+
+    if (key==priority)
     {
-        if (process->Priority >= pri_que[i].Priority)
+        for (i = 0; i <= rear; i++)
         {
-            for (j = rear + 1; j > i; j--)
+            if (process->priority <= pri_que[i].priority)
             {
-                pri_que[j] = pri_que[j - 1];
+                for (j = rear + 1; j > i; j--)
+                {
+                    pri_que[j] = pri_que[j - 1];
+                }
+                pri_que[i] = *process;
+                return;
             }
-            pri_que[i] = *process;
-            return;
         }
+        pri_que[i] = *process;
     }
-    pri_que[i] = *process;
+    else
+    {
+          for (i = 0; i <= rear; i++)
+        {
+            if (process->runTime <= pri_que[i].runTime)
+            {
+                for (j = rear + 1; j > i; j--)
+                {
+                    pri_que[j] = pri_que[j - 1];
+                }
+                pri_que[i] = *process;
+                return;
+            }
+        }
+        pri_que[i] = *process;
+    }
+
+
 }
 
 
@@ -74,7 +104,7 @@ void delete_by_priority(int id)
             {
                 pri_que[i] = pri_que[i + 1];
             }
-        pri_que[i].Priority = -99;
+        pri_que[i].priority = -99;
         rear--;
 
         if (rear == -1) 
@@ -97,60 +127,9 @@ void display_pqueue()
 
     for (; front <= rear; front++)
     {
-        printf(" %d ", pri_que[front].Priority);
+        printf(" %d ", pri_que[front].priority);
     }
     front = 0;
 }
 
-
-void main()
-{
-
-   int n, ch;
-
-   printf("\n1 - Insert an element into queue");
-   printf("\n2 - Delete an element from queue");
-   printf("\n3 - Display queue elements");
-   printf("\n4 - Exit");
-   int c = 0;
-   create();
-   while (1)
-   {
-      printf("\nEnter your choice : ");    
-      scanf("%d", &ch);
-      switch (ch)
-      {
-      case 1: 
-            printf("\nEnter value to be inserted : ");
-            scanf("%d",&n);
-            struct Process p;
-            p.id = c;
-            p.Priority = n;
-            p.RunTime = 1;
-            p.ArrivalTime = 4;
-            struct Process *p_ptr = &p;
-            insert_by_priority(p_ptr);
-            c++;
-            break;
-
-      case 2:
-            printf("\nEnter value to delete : ");
-            scanf("%d",&n);
-            delete_by_priority(n);
-            break;
-
-      case 3: 
-            display_pqueue();
-            break;
-
-      case 4: 
-            exit(0);
-
-      default: 
-            printf("\nChoice is incorrect, Enter a correct choice");
-      }
-
-   }
-
-}
 
