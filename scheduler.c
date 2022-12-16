@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     // printf("arrival time = %d\n", rProcess.arrivalTime);
     // printf("run time = %d\n", rProcess.runTime);
     create();
-
+    printf("%d",atoi(argv[0]));
     if (atoi(argv[0])==SJF)
     {
         setKey(runTime);
