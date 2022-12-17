@@ -1,7 +1,6 @@
 #ifndef HEADERS_H
 #define HEADERS_H
 
-
 #include <stdio.h> //if you don't use scanf/printf change this include
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,8 +14,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-//#include "PriorityQueue.h"
-
+// #include "PriorityQueue.h"
 
 typedef short bool;
 #define true 1
@@ -63,7 +61,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->arrivalTime = arrivalTime;
     p->runTime = runTime;
     p->waitingTime = 0;
-    p->flagLast=0;
+    p->flagLast = 0;
     return p;
 }
 
@@ -177,18 +175,17 @@ void sendProcess(Process sProcess, int queueId)
     }
 }
 
-Process recieveProcess(int queueId)
+Process recieveProcess(int queueId, int *state)
 {
     msgbuff msg;
 
-    int receiveStatus = msgrcv(queueId, &msg, sizeof(msg.process), 0, !IPC_NOWAIT);
+    *state = msgrcv(queueId, &msg, sizeof(msg.process), 0, IPC_NOWAIT);
 
-    if (receiveStatus == -1)
-    {
-        perror("Error in receiving in queue: ");
-    }
+    // if (receiveStatus == -1)
+    // {
+    //     perror("Error in receiving in queue: ");
+    // }
     return msg.process;
 }
-
 
 #endif

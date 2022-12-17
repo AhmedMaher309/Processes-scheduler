@@ -7,25 +7,20 @@
 int main(int agrc, char *argv[])
 {
     initClk();
-
+    printf("in process.c \n");
     // TODO The process needs to get the remaining time from somewhere
     // remainingtime = ??;
 
-    int remainingtime = atoi(argv[0]);
-    int intialRemaining = remainingtime;
-    while (remainingtime > 0)
+    int runTime = atoi(argv[0]);
+    printf("the runtime of the process %d \n", runTime);
+    int intialRunTime = runTime;
+    while (runTime > 0)
     {
-        initClk();
-        int currentClk = getClk();
-        // save the currentclk to be always equal to actual clk and reduce the remainingtime
-        if (currentClk < getClk())
-        {
-            currentClk = getClk();
-            
-            remainingtime--;
-        }
+
+        runTime--;
+        sleep(1);
     }
-    int waitingTime;
+
     destroyClk(false);
 
     return 0;
