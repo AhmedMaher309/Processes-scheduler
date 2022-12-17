@@ -1,6 +1,6 @@
 #include "PriorityQueue.h"
 // Header is included in the priority queue
-//  TODO sort queu to arrival time
+//  TODO sort queue to arrival time
 int runningFlag = 0;
 void handler(int signum)
 {
@@ -108,12 +108,14 @@ void sjfAlgorithm()
             // }
         }
     }
+    printf("Bruh\n");
 }
 
 int main(int argc, char *argv[])
 {
     initClk();
     create();
+    printf("%d is my Parent \n", getppid());
     if (atoi(argv[0]) == 3)
     {
         setKey(runTime);
@@ -124,5 +126,7 @@ int main(int argc, char *argv[])
     // TODO: upon termination release the clock resources.
     //sleep(4);
     // destroyClk(true);
-
+    printf("%d is my Parent \n", getppid());
+    kill(getppid(), SIGINT);
+    return 0;
 }

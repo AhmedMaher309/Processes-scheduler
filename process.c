@@ -22,6 +22,5 @@ int main(int agrc, char *argv[])
     }
     printf("Process done\n");
     destroyClk(false);
-    exit(0);
     return 0;
 }

@@ -1,6 +1,7 @@
 #include "headers.h"
 
-
+int clockPid;
+int schedulePid;
 
 void clearResources(int);
 
@@ -17,7 +18,7 @@ int getNumberOfLines(char *fileName)
         temp = getc(filePtr);
     }
     fclose(filePtr);
-    return count;
+    return count - 1;
 }
 
 void readInputFiles(char *fileName, Process *processArray, int processCount)
@@ -39,7 +40,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
 
 int main(int argc, char *argv[])
 {
-    //signal(SIGINT, clearResources);
+    signal(SIGINT, clearResources);
     // TODO Initialization
     // 1. Read the input files.
 
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
     //  3. Initiate and create the scheduler and clock processes.
     //  4. Use this function after creating the clock process to initialize clock.
 
-    int clockPid = fork();
+    clockPid = fork();
     if (clockPid == 0) // child(clock process)
     {
         // printf("go to run \n");
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     if (chosenAlgorithm == RR || chosenAlgorithm == MLFL)
         quantum = atoi(argv[5]);
 
-    int schedulePid = fork();
+    schedulePid = fork();
     if (schedulePid == 0) // child(scheduler process)
     {
 
@@ -99,9 +100,13 @@ int main(int argc, char *argv[])
         fflush(stdout);// 6. Send the information to the scheduler at the appropriate time.
         while (processArray[currentProcess].arrivalTime == x) // made it while not if, because I want the parent process not to procced until it, finishes the current x
         {
-            // printf("here enter a process \n");
-            if (currentProcess == processCount)
-                processArray[currentProcess].flagLast = 1;
+            printf("process number %d\n",currentProcess);
+            printf("process count %d\n",processCount);
+
+            if (currentProcess == processCount - 1){
+                    processArray[currentProcess].flagLast = 1;
+                    printf("%d is last flag", processArray[currentProcess].flagLast);
+                }
             sendProcess(processArray[currentProcess], msgqId);
             currentProcess++;
         }
@@ -126,19 +131,9 @@ void clearResources(int signum)
     //Delete the queue
     //Destroy the clk
     //Call clear resources handler instead of destroyClk(true)
-
-    // int stat_loc;
-    // int pid = wait(&stat_loc);
-    // if(!(stat_loc & 0x00FF))
-    // {
-    // // if (pid==pid1)
-    // // {
-    // //     printf("Child 1 : found %d at index %d\n",reqNumber,stat_loc>>8);
-    // // }
-    // // else
-    // //     printf("Child 2 : found %d at index %d\n",reqNumber,stat_loc>>8);
-    // destroyClk(true);
-    // killpg(getgrp(), SIGKILL);
-    //     //signal( SIGINT, clearResources);
-    // }
+    
+    kill(clockPid, SIGINT);
+    printf("Process_generator of PID = %d exited\n", getpid());
+    exit(0);
+    signal( SIGINT, clearResources);
 }
