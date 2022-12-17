@@ -20,8 +20,8 @@ int main(int agrc, char *argv[])
         runTime--;
         sleep(1);
     }
-
+    printf("Process done\n");
     destroyClk(false);
-
+    exit(0);
     return 0;
 }

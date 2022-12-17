@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
         printf("%d ", stat_loc >> 8);
     }
 
-    destroyClk(true);
+    //destroyClk(true);
 }
 
 void clearResources(int signum)
@@ -126,4 +126,19 @@ void clearResources(int signum)
     //Delete the queue
     //Destroy the clk
     //Call clear resources handler instead of destroyClk(true)
+
+    // int stat_loc;
+    // int pid = wait(&stat_loc);
+    // if(!(stat_loc & 0x00FF))
+    // {
+    // // if (pid==pid1)
+    // // {
+    // //     printf("Child 1 : found %d at index %d\n",reqNumber,stat_loc>>8);
+    // // }
+    // // else
+    // //     printf("Child 2 : found %d at index %d\n",reqNumber,stat_loc>>8);
+    // destroyClk(true);
+    // killpg(getgrp(), SIGKILL);
+    //     //signal( SIGINT, clearResources);
+    // }
 }

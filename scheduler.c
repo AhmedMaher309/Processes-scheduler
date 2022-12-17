@@ -66,6 +66,7 @@ void sjfAlgorithm()
             display_pqueue();
             // printf("Run time of Popped process: %d\n", recievedProcess.runTime);
             recievedProcess.state = running;
+            int currentProcess = recievedProcess.id;
             // fflush(stdout);
             // printf("startingTime= %d\n", getClk());
             // if (recievedProcess.state == running)
@@ -88,6 +89,14 @@ void sjfAlgorithm()
                 printf("This is great \n");
 
                 run("process", remain, NULL);
+                
+                
+            }
+            int stat_loc;
+            processPid = wait(&stat_loc);
+            fflush(stdout);
+            if(!(stat_loc & 0x00FF)){
+                printf("%d has exited successfully\n", currentProcess);
             }
 
             // if (processPid == 0)
@@ -113,6 +122,7 @@ int main(int argc, char *argv[])
 
     // TODO: implement the scheduler.
     // TODO: upon termination release the clock resources.
-    sleep(4);
+    //sleep(4);
     // destroyClk(true);
+
 }
