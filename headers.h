@@ -33,6 +33,14 @@ typedef enum
     finished,
 } ProcessState;
 
+enum Algorithm
+{
+    SJF = 1,
+    HPF = 2,
+    RR = 3,
+    MLFL = 4
+};
+
 struct Process
 {
     int id;
@@ -55,6 +63,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->arrivalTime = arrivalTime;
     p->runTime = runTime;
     p->waitingTime = 0;
+    p->flagLast=0;
     return p;
 }
 

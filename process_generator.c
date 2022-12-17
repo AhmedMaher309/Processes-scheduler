@@ -1,14 +1,6 @@
 #include "headers.h"
-// #include "Process.h"
 
 
-enum Algorithm
-{
-    SJF = 1,
-    HPF = 2,
-    RR = 3,
-    MLFL = 4
-};
 
 void clearResources(int);
 
@@ -35,10 +27,11 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
     fscanf(filePtr, "%*[^\n]\n");
     for (int i = 0; i < processCount; i++)
     {
+        processArray[i]=*createProcess(0,0,0,0);
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
 
-        printf("%d \n", processArray[i].arrivalTime);
+        // printf("Arrival time is: %d \n", processArray[i].arrivalTime);
     }
     fclose(filePtr);
 }
@@ -82,21 +75,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // if (chosenAlgorithm == SJF)
-            // {
-            //     setKey(runTime);
-            // }
-            // if (chosenAlgorithm == HPF)
-            // {
-            //     setKey(priority);
-            // }
-
-            // create();
-            // for (int i = 0; i < processCount; i++)
-            // {
-            //     insert_by_priority(&processArray[i]);
-            // }
-
             run("scheduler", argv[3], NULL);
         }
     }
@@ -121,7 +99,7 @@ int main(int argc, char *argv[])
         fflush(stdout);// 6. Send the information to the scheduler at the appropriate time.
         while (processArray[currentProcess].arrivalTime == x) // made it while not if, because I want the parent process not to procced until it, finishes the current x
         {
-            printf("here enter a process \n");
+            // printf("here enter a process \n");
             if (currentProcess == processCount)
                 processArray[currentProcess].flagLast = 1;
             sendProcess(processArray[currentProcess], msgqId);

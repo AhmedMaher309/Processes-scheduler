@@ -1,4 +1,4 @@
-//#include "headers.h"
+#include "headers.h"
 #define MAX 100
 
 struct Process pri_que[MAX];
@@ -18,36 +18,12 @@ void create()
 {
     front = rear = -1;
 }
-    
-// Function to insert value into priority queue 
-// assuming high value is the high prioriity
-void insert_by_priority(struct Process* process)
-{
-    if (rear >= MAX - 1)
-    {
-        printf("\nQueue overflow no more elements can be inserted");
-        return;
-    }
-    if ((front == -1) && (rear == -1))
-    {
-        front++;
-        rear++;
-        pri_que[rear] = *process;
-        return;
-    }    
-    else 
-        checkPriority(process);
-    rear++;
-}
 
-//function to pop first element
-Process popQueue(){
-    Process *temp = pri_que[front];
-    delete_by_priority(pri_que[front].id);
-    return *temp;
-}
+
+
     
 // Function to check priority and place element 
+    
 void checkPriority(struct Process *process)
 {
     int i,j;
@@ -88,6 +64,29 @@ void checkPriority(struct Process *process)
 
 }
 
+// Function to insert value into priority queue 
+// assuming low value is the high prioriity
+void insert_by_priority(struct Process* process)
+{
+    if (rear >= MAX - 1)
+    {
+        printf("\nQueue overflow no more elements can be inserted");
+        return;
+    }
+    if ((front == -1) && (rear == -1))
+    {
+        front++;
+        rear++;
+        pri_que[rear] = *process;
+        return;
+    }    
+    else 
+        checkPriority(process);
+    rear++;
+}
+
+
+
 
 // Function to delete an element from queue 
 void delete_by_priority(int id)
@@ -119,6 +118,14 @@ void delete_by_priority(int id)
 }
 
 
+//function to pop first element
+Process popQueue(){
+    Process temp = pri_que[front];
+    delete_by_priority(pri_que[front].id);
+    return temp;
+}
+
+
 // Function to display queue elements 
 void display_pqueue()
 {
@@ -130,8 +137,10 @@ void display_pqueue()
 
     for (; front <= rear; front++)
     {
-        printf(" %d ", pri_que[front].priority);
+        printf(" %d ", pri_que[front].id);
+        
     }
+    printf("\n");
     front = 0;
 }
 
