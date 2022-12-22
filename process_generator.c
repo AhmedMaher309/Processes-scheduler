@@ -1,10 +1,7 @@
 #include "headers.h"
 
-int clockPid;
-int schedulePid;
-
+int clockPid, schedulePid;
 void clearResources(int);
-
 int getNumberOfLines(char *fileName)
 {
     int count = 0;
@@ -31,8 +28,6 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
         processArray[i]=*createProcess(0,0,0,0);
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
-
-        // printf("Arrival time is: %d \n", processArray[i].arrivalTime);
     }
     fclose(filePtr);
 }
@@ -80,9 +75,6 @@ int main(int argc, char *argv[])
         }
     }
 
-
-
-    
 
     //  To get time use this function.
     int x;

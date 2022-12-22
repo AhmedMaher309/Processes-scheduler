@@ -14,7 +14,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
-// #include "PriorityQueue.h"
 
 typedef short bool;
 #define true 1
@@ -130,10 +129,6 @@ void run(char *fileNameInput, char *argv1, char *argv2)
     }
     else
     {
-        // char path[20];
-        // strcat(fileNameInput, ".out");
-        // printf("%s \n", fileNameInput);
-        // printf("Go to execl \n");
         char path[20];
         sprintf(path, "%s.out", fileNameInput);
         char *absPath = realpath(path, NULL);
@@ -160,12 +155,6 @@ int intMsgQueue(int key)
 void sendProcess(Process sProcess, int queueId)
 {
     msgbuff msg;
-    // msg.process.arrivalTime = sProcess.arrivalTime;
-    // msg.process.id = sProcess.id;
-    // msg.process.priority = sProcess.priority;
-    // msg.process.runTime = sProcess.runTime;
-    // msg.process.startingTime = sProcess.startingTime;
-    // msg.process.waitingTime = sProcess.waitingTime;
     msg.process = sProcess;
     int sendStatus = msgsnd(queueId, &msg, sizeof(msg.process), !IPC_NOWAIT);
 
@@ -180,11 +169,6 @@ Process recieveProcess(int queueId, int *state)
     msgbuff msg;
 
     *state = msgrcv(queueId, &msg, sizeof(msg.process), 0, IPC_NOWAIT);
-
-    // if (receiveStatus == -1)
-    // {
-    //     perror("Error in receiving in queue: ");
-    // }
     return msg.process;
 }
 

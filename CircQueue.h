@@ -1,6 +1,6 @@
-//#include "headers.h"
+#include "headers.h"
 
-#define SIZE 4
+#define SIZE 100
 
 struct Process circ_que[SIZE];
 int front = -1, rear = -1;
@@ -12,7 +12,7 @@ int isFull() {
 }
 
 // Check if the queue is empty
-int isEmpty() {
+int isEmptyQueue() {
   if (front == -1) return 1;
   return 0;
 }
@@ -65,84 +65,4 @@ void display() {
     printf("%d ", circ_que[i].id);
     printf("\n Rear -> %d \n", rear);
   }
-}
-
-int main() {
-  // Fails because front = -1
-  deQueue();
-  
-  int c = 0;
-  struct Process p;
-  int n;
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  struct Process *p_ptr = &p;
-  c++;
-  enQueue(p_ptr);
-  display();
-
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-  display();
-
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-  display();
-
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-  display();
-  
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-  display();
-
-  scanf("%d",&n);
-  p.id = n;
-  p.Priority = c;
-  p.RunTime = 1;
-  p.ArrivalTime = 4;
-  c++;
-  enQueue(p_ptr);
-  display();
-
-
-  display();
-  deQueue();
-
-  display();
-
-
-  return 0;
 }
