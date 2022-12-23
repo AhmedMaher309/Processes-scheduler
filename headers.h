@@ -15,10 +15,10 @@
 #include <signal.h>
 #include <string.h>
 
+
 typedef short bool;
 #define true 1
 #define false 0
-
 #define SHKEY 300
 #define QKEY 100
 //====================================
@@ -29,7 +29,6 @@ typedef enum
     running,
     finished,
 } ProcessState;
-
 enum Algorithm
 {
     SJF = 1,
@@ -62,7 +61,8 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->runTime = runTime;
     p->waitingTime = 0;
     p->flagLast = 0;
-    p->forkingID =  0;
+    p->forkingID = -1;
+    p->remainingTime = runTime;
     return p;
 }
 

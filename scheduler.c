@@ -3,6 +3,9 @@
 //  TODO sort queue to arrival time
 int runningFlag = 0;
 int pidTracker[100];
+int ProcessRemainingTIme =0;
+int runningProcessID;
+Process * processPtr = NULL;
 
 void handler(int signum)
 {
@@ -16,6 +19,7 @@ void sjfAlgorithm()
     int x;
     int rState;
     fflush(stdout);
+
     while (1)
     {
         signal(SIGCHLD, handler);
@@ -81,6 +85,7 @@ void sjfAlgorithm()
             }
 
         } while (!lastFlag && !isEmpty());
+
         if (lastFlag && isEmpty())
         {
             int lastArriv = getClk();
@@ -100,6 +105,7 @@ void hpfAlgorithm()
     int lastFlag = 0;
     int RC, clk, receiveState,queuId,msgNum;
     struct msqid_ds buf;
+    Process processToRun;
     printf("Im in HPF now\n");
     while(true)
     {
@@ -111,11 +117,20 @@ void hpfAlgorithm()
         clk = getClk();
         queuId = intMsgQueue(QKEY);
         Process recProcess = recieveProcess(queuId, &receiveState);
+        printf("remain time %d\n", recProcess.remainingTime);
         if (receiveState != -1)
         {
+            lastFlag = recProcess.flagLast;
             printf("id of the received process is: %d", recProcess.id);
             printf(" and its flag is: %d\n",recProcess.flagLast);
-            insert_by_priority(&recProcess);
+            if(processPtr == NULL)
+            {
+                insert_by_priority(&recProcess);
+            }
+            else{
+                kill(processPtr->forkingID, SIGSTOP);
+                insert_by_priority(&recProcess);
+            }
         }
         RC = msgctl(queuId,IPC_STAT, &buf);
         msgNum = buf.msg_qnum;
@@ -127,48 +142,67 @@ void hpfAlgorithm()
             {
             printf("id of the received process is: %d", recProcess.id);
             printf(" and its flag is: %d\n",recProcess.flagLast);
-            insert_by_priority(&recProcess);
+            if(processPtr == NULL)
+            {
+                insert_by_priority(&recProcess);
+            }
+            else{
+                kill(processPtr->forkingID, SIGSTOP);
+                insert_by_priority(&recProcess);
+            }
             RC = msgctl(queuId,IPC_STAT, &buf);
             msgNum = buf.msg_qnum;
             }
         }
-        do{
-            if (!runningFlag && !isEmpty())
+
+        if(!runningFlag && !isEmpty())
+        {
+            printf("Current Time is %d\n", clk);
+            runningFlag = 1;
+            processToRun = popQueue();
+            processPtr = &processToRun;
+            processToRun.state = started;
+            processToRun.startingTime = getClk();
+            printf("process forking id = %d\n", processToRun.forkingID);
+
+            // the process hasn't been forked before
+            if (processToRun.forkingID == -1)
             {
-                if (lastFlag && !isEmpty())
-                {
-                    printf("current time is: %d", getClk());
-                }
-                printf("queue values are: ");
-                display_pqueue();
-                recProcess = popQueue();
-                //printf("state of msg queue is: %d\n", receiveState);
                 char remain[10];
-                sprintf(remain, "%d", recProcess.runTime);
+                sprintf(remain, "%d", processToRun.runTime);
                 runningFlag = 1;
-                int processId = fork();
-                if(processId == 0)
+                runningProcessID = fork();
+                if (runningProcessID == 0)
                 {
-                    printf("process forked successfuly\n");
+                    printf("im in the forking\n");
+                    printf(" the running process is %d\n", processToRun.id);
                     run("process", remain, NULL);
                 }
             }
 
-        }while(!lastFlag && ! isEmpty());
-        if (lastFlag && isEmpty())
-        {
-            int lastArriv = getClk();
-            while (getClk() != lastArriv + recProcess.runTime + 1)
-            {
-                printf("Current Time is %d\n", getClk());
-                sleep(1);
+            // the process has been forked before
+            else{
+                processToRun.state = running;
+                kill(processToRun.forkingID, SIGCONT);
+                runningProcessID = processToRun.forkingID;
             }
+
+            processToRun.remainingTime--;
+            printf( "the remaining time of process is: %d\n",processToRun.remainingTime);
+            if (processToRun.remainingTime>0)
+            {
+                insert_by_priority(&processToRun);
+            }
+        }
+        if (isEmpty() && lastFlag)
+        {
             destroyClk(true);
             break;
         }
-
+        
     }
 }
+
 
 
 int main(int argc, char *argv[])
@@ -181,7 +215,7 @@ int main(int argc, char *argv[])
     if (chosenAlgorithm == 3)
     {
         setKey(runTime);
-        sjfAlgorithm();
+        hpfAlgorithm();
     }
     // else if (chosenAlgorithm==RR)
     // {
@@ -197,3 +231,9 @@ int main(int argc, char *argv[])
     // destroyClk();
     return 0;
 }
+
+
+
+
+// gcc process_generator.c -o process_gen.out 
+// ./process_gen.out processes.txt  -sch 3 -q 5
