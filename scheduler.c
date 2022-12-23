@@ -39,7 +39,6 @@ void sjfAlgorithm()
         int message_num = buf.msg_qnum;
         while (message_num != 0)
         {
-            // sleep(0.1);
             recievedProcess = recieveProcess(queueId, &rState);
             printf("id of recieved process: %d\n", recievedProcess.id);
             if (rState != -1)
@@ -51,7 +50,6 @@ void sjfAlgorithm()
                 message_num = buf.msg_qnum;
             }
         }
-
         do
         {
             if (!runningFlag && !isEmpty())
@@ -60,7 +58,6 @@ void sjfAlgorithm()
                 {
                     printf("Current Time is %d\n", x);
                 }
-
                 display_pqueue();
                 recievedProcess = popQueue();
                 display_pqueue();
@@ -82,11 +79,6 @@ void sjfAlgorithm()
                     run("process", remain, NULL);
                 }
             }
-            // if (lastFlag && isEmpty())
-            // {
-            //     destroyClk(true);
-            //     break;
-            // }
 
         } while (!lastFlag && !isEmpty());
         if (lastFlag && isEmpty())
@@ -100,80 +92,84 @@ void sjfAlgorithm()
             destroyClk(true);
             break;
         }
-        //
     }
 }
 
-// void rrAlgorithm(int quantum)
-// {
-//     /*
+void hpfAlgorithm()
+{
+    int lastFlag = 0;
+    int RC, clk, receiveState,queuId,msgNum;
+    struct msqid_ds buf;
+    printf("Im in HPF now\n");
+    while(true)
+    {
+        signal(SIGCHLD, handler);
+        fflush(stdout);
+        clk = getClk();
+        printf("Current Time is %d\n", clk);
+        sleep(1);
+        clk = getClk();
+        queuId = intMsgQueue(QKEY);
+        Process recProcess = recieveProcess(queuId, &receiveState);
+        if (receiveState != -1)
+        {
+            printf("id of the received process is: %d", recProcess.id);
+            printf(" and its flag is: %d\n",recProcess.flagLast);
+            insert_by_priority(&recProcess);
+        }
+        RC = msgctl(queuId,IPC_STAT, &buf);
+        msgNum = buf.msg_qnum;
 
-//     while (not all processes finished)
+        while (msgNum != 0){
+            printf("Current Time is %d\n", clk);
+            recProcess = recieveProcess(queuId, &receiveState);
+            if (receiveState != -1)
+            {
+            printf("id of the received process is: %d", recProcess.id);
+            printf(" and its flag is: %d\n",recProcess.flagLast);
+            insert_by_priority(&recProcess);
+            RC = msgctl(queuId,IPC_STAT, &buf);
+            msgNum = buf.msg_qnum;
+            }
+        }
+        do{
+            if (!runningFlag && !isEmpty())
+            {
+                if (lastFlag && !isEmpty())
+                {
+                    printf("current time is: %d", getClk());
+                }
+                printf("queue values are: ");
+                display_pqueue();
+                recProcess = popQueue();
+                //printf("state of msg queue is: %d\n", receiveState);
+                char remain[10];
+                sprintf(remain, "%d", recProcess.runTime);
+                runningFlag = 1;
+                int processId = fork();
+                if(processId == 0)
+                {
+                    printf("process forked successfuly\n");
+                    run("process", remain, NULL);
+                }
+            }
 
-//         check if a new process arrived
+        }while(!lastFlag && ! isEmpty());
+        if (lastFlag && isEmpty())
+        {
+            int lastArriv = getClk();
+            while (getClk() != lastArriv + recProcess.runTime + 1)
+            {
+                printf("Current Time is %d\n", getClk());
+                sleep(1);
+            }
+            destroyClk(true);
+            break;
+        }
 
-//         check the remaining of the process
-//         if remainingTime < quantum -> make remainingTime=0 and exit it
-//         else
+    }
+}
 
-//             if not forked (i.e if not in the pidTracker) -> fork, else sigcont to this id
-//             stop the rest
-//             run this process
-//             remainingTime-=quantum
-//             stop
-
-//             check if another one arrived
-//             put at the end of the queue
-
-//     */
-
-//    int lastFlag=0;
-//    if (!isEmpty())
-
-// }
-
-// void mlfqAlgorithm(int quantum){
-//     int lastflag = 0;
-//     int rc;
-//     int x;
-//     int rState;
-//     fflush(stdout);
-//     while(!lastflag){
-//         signal(SIGCHLD, handler);
-//         fflush(stdout);
-//         sleep(1);
-//         x = getClk();
-//         int queueId = intMsgQueue(QKEY);
-//         struct msqid_ds buf;
-//         sleep(0.02);
-//         //Process recievedProcess = recieveProcess(queueId, &rState);
-//         Process recievedProcess;
-//         circQueue* MLFQ[11];
-//         for (int i = 0; i<11; i++){
-//             MLFQ[i] = CreateQueueM();
-//         }
-//         rc = msgctl(queueId, IPC_STAT, &buf);
-//         int message_num = buf.msg_qnum;
-//         while (message_num != 0)
-//         {
-//             sleep(0.01);
-//             recievedProcess = recieveProcess(queueId, &rState);
-//             enQueue(MLFQ[recievedProcess.priority],recievedProcess);
-//             printf("id of recieved process: %d\n", recievedProcess.id);
-//             if (rState != -1)
-//             {
-//                 //insert_by_priority(&recievedProcess);
-//                 rc = msgctl(queueId, IPC_STAT, &buf);
-//                 message_num = buf.msg_qnum;
-//             }
-//         }
-//         if(!runningFlag && !isEmpty()){
-
-//         }
-
-//     }
-
-// }
 
 int main(int argc, char *argv[])
 {

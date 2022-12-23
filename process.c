@@ -7,7 +7,7 @@
 int main(int agrc, char *argv[])
 {
     initClk();
-    printf("in process.c \n");
+    // printf("in process.c \n");
     // TODO The process needs to get the remaining time from somewhere
     // remainingtime = ??;
 
