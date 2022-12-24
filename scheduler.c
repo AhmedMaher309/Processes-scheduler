@@ -5,11 +5,27 @@ int runningFlag = 0;
 int pidTracker[100];
 int ProcessRemainingTIme =0;
 int runningProcessID;
+int currentIsFinished = 1;
 Process * processPtr = NULL;
+
 
 void handler(int signum)
 {
     runningFlag = 0;
+    if(currentIsFinished == 1)
+    {
+        if (processPtr != NULL)
+        {
+           insert_by_priority(processPtr);
+           printf("process %d",processPtr->id);
+           printf(" inserted again\n");
+        }
+    
+    }
+    else{
+        currentIsFinished = 1;
+    }
+    
 }
 
 void sjfAlgorithm()
@@ -56,8 +72,8 @@ void sjfAlgorithm()
         }
         do
         {
-            if (!runningFlag && !isEmpty())
-            {
+            // if (!runningFlag && !isEmpty())
+            // {
                 if (lastFlag && !isEmpty())
                 {
                     printf("Current Time is %d\n", x);
@@ -82,7 +98,7 @@ void sjfAlgorithm()
                     fflush(stdout);
                     run("process", remain, NULL);
                 }
-            }
+           // }
 
         } while (!lastFlag && !isEmpty());
 
@@ -100,16 +116,18 @@ void sjfAlgorithm()
     }
 }
 
+
+
 void hpfAlgorithm()
 {
     int lastFlag = 0;
     int RC, clk, receiveState,queuId,msgNum;
     struct msqid_ds buf;
     Process processToRun;
+    signal(SIGCHLD, handler);
     printf("Im in HPF now\n");
     while(true)
     {
-        signal(SIGCHLD, handler);
         fflush(stdout);
         clk = getClk();
         printf("Current Time is %d\n", clk);
@@ -117,9 +135,9 @@ void hpfAlgorithm()
         clk = getClk();
         queuId = intMsgQueue(QKEY);
         Process recProcess = recieveProcess(queuId, &receiveState);
-        printf("remain time %d\n", recProcess.remainingTime);
         if (receiveState != -1)
         {
+            //printf("remain time %d\n", recProcess.remainingTime);
             lastFlag = recProcess.flagLast;
             printf("id of the received process is: %d", recProcess.id);
             printf(" and its flag is: %d\n",recProcess.flagLast);
@@ -129,7 +147,10 @@ void hpfAlgorithm()
             }
             else{
                 kill(processPtr->forkingID, SIGSTOP);
+                printf("we stopped process %d\n",processPtr->id);
+                currentIsFinished = 0;
                 insert_by_priority(&recProcess);
+
             }
         }
         RC = msgctl(queuId,IPC_STAT, &buf);
@@ -140,21 +161,26 @@ void hpfAlgorithm()
             recProcess = recieveProcess(queuId, &receiveState);
             if (receiveState != -1)
             {
-            printf("id of the received process is: %d", recProcess.id);
-            printf(" and its flag is: %d\n",recProcess.flagLast);
-            if(processPtr == NULL)
-            {
-                insert_by_priority(&recProcess);
-            }
-            else{
-                kill(processPtr->forkingID, SIGSTOP);
-                insert_by_priority(&recProcess);
-            }
+                lastFlag = recProcess.flagLast;
+                printf("id of the received process is: %d", recProcess.id);
+                printf(" and its flag is: %d\n",recProcess.flagLast);
+                if(processPtr == NULL)
+                {
+                    insert_by_priority(&recProcess);
+                }
+                else
+                {
+                    kill(processPtr->forkingID, SIGSTOP);
+                    printf("we stopped process %d\n",processPtr->id);
+                    currentIsFinished = 0;
+                    insert_by_priority(&recProcess);
+                }
             RC = msgctl(queuId,IPC_STAT, &buf);
             msgNum = buf.msg_qnum;
             }
         }
-
+    //    do
+    //    {
         if(!runningFlag && !isEmpty())
         {
             printf("Current Time is %d\n", clk);
@@ -172,29 +198,31 @@ void hpfAlgorithm()
                 sprintf(remain, "%d", processToRun.runTime);
                 runningFlag = 1;
                 runningProcessID = fork();
+                if(runningProcessID != 0)
+                {
+                    processToRun.forkingID = runningProcessID;
+                }
                 if (runningProcessID == 0)
                 {
                     printf("im in the forking\n");
-                    printf(" the running process is %d\n", processToRun.id);
+                    printf("the running process is %d\n", processToRun.id);
                     run("process", remain, NULL);
                 }
             }
 
             // the process has been forked before
             else{
+                printf("lets continue the process with id %d\n", processToRun.id);
                 processToRun.state = running;
                 kill(processToRun.forkingID, SIGCONT);
                 runningProcessID = processToRun.forkingID;
             }
 
-            processToRun.remainingTime--;
-            printf( "the remaining time of process is: %d\n",processToRun.remainingTime);
-            if (processToRun.remainingTime>0)
-            {
-                insert_by_priority(&processToRun);
-            }
+            //processToRun.remainingTime--;
+            //printf( "the remaining time of process is: %d\n",processToRun.remainingTime);
         }
-        if (isEmpty() && lastFlag)
+       //}while(!runningFlag && !isEmpty());
+        if (isEmpty() && lastFlag && !runningFlag)
         {
             destroyClk(true);
             break;
@@ -214,7 +242,7 @@ int main(int argc, char *argv[])
 
     if (chosenAlgorithm == 3)
     {
-        setKey(runTime);
+        setKey(priority);
         hpfAlgorithm();
     }
     // else if (chosenAlgorithm==RR)
@@ -237,3 +265,8 @@ int main(int argc, char *argv[])
 
 // gcc process_generator.c -o process_gen.out 
 // ./process_gen.out processes.txt  -sch 3 -q 5
+
+
+// if the sigchild is from stopping the proc4ss ---> ignore it
+// if it is from the process termination ----> change the flag to return to its normal and 
+// not put that process in the scheduler  then continue
