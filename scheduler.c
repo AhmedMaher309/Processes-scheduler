@@ -104,20 +104,19 @@ void sjfAlgorithm()
     }
 }
 
-
 void rrAlgorithm(int quantum)
 {
     signal(SIGCHLD, handler);
-    int lastFlag=0; 
-    int rc,x,rState,qState;
-    int aProcessFinished=0;
-    Process finishedProcess, recievedProcess;
-    while (!lastFlag || runningFlag)
+    int lastFlag = 0;
+    int rc, x, rState, qState;
+    int aProcessFinished = 0;
+    Process finishedProcess, recievedProcess, lastProcess;
+    while (!lastFlag || runningFlag || !(isEmptyQueue()) || aProcessFinished)
     {
         sleep(1);
-        x=getClk();
+        x = getClk();
         printf("Current Time is %d\n", x);
-        int queueId= intMsgQueue(QKEY);
+        int queueId = intMsgQueue(QKEY);
         // Process recievedProcess=recieveProcess(queueId, &rState);
         // if (rState!=-1)
         // {
@@ -125,12 +124,10 @@ void rrAlgorithm(int quantum)
         //     qState=enQueue(&recievedProcess);
         // }
 
+        // If there are multiple processes in the queue it will enter the while loop
+        // Else it will work on the already recievedProcess above
 
-        //If there are multiple processes in the queue it will enter the while loop
-        //Else it will work on the already recievedProcess above
-        
-        
-        //while loop to recieve
+        // while loop to recieve
         struct msqid_ds buf;
         rc = msgctl(queueId, IPC_STAT, &buf);
         int message_num = buf.msg_qnum;
@@ -138,119 +135,148 @@ void rrAlgorithm(int quantum)
         {
             sleep(0.01);
             recievedProcess = recieveProcess(queueId, &rState);
-            printf("id of recieved process: %d\n", recievedProcess.id);
             if (rState != -1)
             {
-                //todo: insert in the circular queue
-                qState=enQueue(&recievedProcess);
+                if (recievedProcess.flagLast==1) lastProcess=recievedProcess;
+                // todo: insert in the circular queue
+                // printf("Recieved process: %d\n", recievedProcess.id);
+                // printf("Recieved process of remaining time %d\n", recievedProcess.remainingTime);
+                qState = enQueue(&recievedProcess);
                 rc = msgctl(queueId, IPC_STAT, &buf);
                 message_num = buf.msg_qnum;
             }
         }
         if (aProcessFinished)
         {
-            qState=enQueue(&finishedProcess);
-            aProcessFinished=0;
+            //TO DO WE NEED TO TRANSFER LAST FLAG TO RECENTLY RE-ENQUEUED AND RESET LAST FLAG TO 0
+            //FIND ID OF PROCESS WITH LAST FLAG'
+            //Pointer on last process that points to the final process
+            // lastFlag=0;
+            // finishedProcess.flagLast=1;
+            // lastProcess.flagLast=0;
+            // lastProcess=finishedProcess;
+            qState = enQueue(&finishedProcess);
+            // printf("Process %d returned to queue \n", finishedProcess.id);
+            aProcessFinished = 0;
         }
 
-        //The size of circ queue must be size of the processes
-    
-        //while loop in the scheduler to compare quantum with current time remainder
-        //then decide whether to 
+        // The size of circ queue must be size of the processes
 
-        //Enqueue all processes in the circular queue (the rear will move)
-        //until the msg queue is empty
-        if (!isEmptyQueue() && !runningFlag)
+        // while loop in the scheduler to compare quantum with current time remainder
+        // then decide whether to
+
+        // Enqueue all processes in the circular queue (the rear will move)
+        // until the msg queue is empty
+        if (!(isEmptyQueue()) && !runningFlag)
         {
-            finishedProcess=deQueue();
-            finishedProcess.state=running;
-            lastFlag=finishedProcess.flagLast;
+            finishedProcess = deQueue();
+            finishedProcess.state = running;
+            printf("Process %d is dequeed \n", finishedProcess.id);
+            // printf("finished process of remaining time %d\n", finishedProcess.remainingTime);
+            if(!lastFlag) lastFlag = finishedProcess.flagLast;
             char remaining[10];
-            
-            runningFlag=1;            
-              /*
-                if rt =< quantum -> send remainingTime and don't put it back in the queue
-                if rt > quantum -> mark it as returning back to the queue
-            */
-            if (finishedProcess.remainingTime>quantum) aProcessFinished=1;           
-                //This will tell us that the process is returning again to the queue
-    
-            sprintf(remaining,"%d",finishedProcess.remainingTime);
-          
-            if (finishedProcess.forkId==0)
+
+            runningFlag = 1;
+            /*
+              if rt =< quantum -> send remainingTime and don't put it back in the queue
+              if rt > quantum -> mark it as returning back to the queue
+          */
+
+            if (finishedProcess.remainingTime > quantum)
             {
-                int pid=fork();
-                if (pid==0) run("process",remaining,NULL);
-                else 
-                    finishedProcess.forkId=pid;              
+                // printf("Remainng time is larger than quatum \n");
+                aProcessFinished = 1;
+            }
+            // This will tell us that the process is returning again to the queue
+
+            sprintf(remaining, "%d", finishedProcess.remainingTime);
+            // printf("The remaining Time of process %d is %d \n", finishedProcess.id, finishedProcess.remainingTime);
+            if (finishedProcess.forkId == 0)
+            {
+                printf("Process %d Started \n", finishedProcess.id);
+                int pid = fork();
+
+                if (pid == 0)
+                    run("process", remaining, NULL);
+                else
+                {
+
+                    finishedProcess.forkId = pid;
+                    printf("forkID is %d\n", finishedProcess.forkId);
+                }
             }
             else
             {
-                kill(finishedProcess.forkId,SIGCONT);
+
+                // printf("ForkID is %d\n", finishedProcess.forkId);
+                printf("Process %d Continued \n", finishedProcess.id);
+                kill(finishedProcess.forkId, SIGCONT);
             }
-            
-            x=getClk();
-            while ( (getClk()-x) != quantum)
+
+            x = getClk();
+            int q=quantum;
+            if (finishedProcess.remainingTime<quantum) q=finishedProcess.remainingTime;
+            while ((getClk() - x) != q)
             {
                 sleep(1);
-                finishedProcess.remainingTime-=1;
-                printf("Current Time is %d\n", x);
+                finishedProcess.remainingTime -= 1;
+                // printf("Current Time is %d\n", getClk());
             }
 
             sleep(0.01);
-            kill(finishedProcess.forkId,SIGSTOP);
-
+            kill(finishedProcess.forkId, SIGSTOP);
         }
-        
+
+        // printf("Is empty= %d\n",isEmptyQueue());
+        // printf("Running Flag= %d\n",runningFlag);
+        // printf("Last Flag= %d\n",lastFlag);
     }
-    
 
     /*
     while (not all processes finished)
-     
+
         check if a new process arrived
         check the remaining of the process
-        if remainingTime < quantum -> make remainingTime=0 and exit it 
+        if remainingTime < quantum -> make remainingTime=0 and exit it
         else
 
             if not forked (i.e if not in the pidTracker) -> fork, else sigcont to this id
             stop the rest
-            run this process 
-            remainingTime-=quantum  
-            stop 
-            check if another one arrived 
+            run this process
+            remainingTime-=quantum
+            stop
+            check if another one arrived
             put at the end of the queue
-    
-    */  
+
+    */
+    printf("Is empty out of while= %d\n",isEmptyQueue());
 }
-
-
 
 int main(int argc, char *argv[])
 {
     initClk();
     create();
     printf("%d is my Parent \n", getppid());
-    int chosenAlgorithm=atoi(argv[0]);
+    int chosenAlgorithm = atoi(argv[0]);
 
     if (chosenAlgorithm == SJF)
     {
         setKey(runTime);
         sjfAlgorithm();
     }
-    else if (chosenAlgorithm==RR)
+    else if (chosenAlgorithm == RR)
     {
         rrAlgorithm(atoi(argv[1]));
+        // printf("I")
     }
 
     // TODO: implement the scheduler.
     // TODO: upon termination release the clock resources.
-    //sleep(4);
+    // sleep(4);
     // destroyClk(true);
     printf("%d is my Parent \n", getppid());
+    destroyClk(true);
+
     kill(getppid(), SIGINT);
     return 0;
 }
-
-
-

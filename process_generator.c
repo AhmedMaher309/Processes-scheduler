@@ -15,7 +15,7 @@ int getNumberOfLines(char *fileName)
         temp = getc(filePtr);
     }
     fclose(filePtr);
-    return count ;
+    return count;
 }
 
 void readInputFiles(char *fileName, Process *processArray, int processCount)
@@ -28,6 +28,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
         processArray[i] = *createProcess(0, 0, 0, 0);
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
+        processArray[i].remainingTime = processArray[i].runTime;
     }
     fclose(filePtr);
 }
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
         // x = getClk();
         sleep(1);
         x = getClk();
-        //printf("Current Time is %d\n", x);
+        // printf("Current Time is %d\n", x);
         fflush(stdout);                                       // 6. Send the information to the scheduler at the appropriate time.
         while (processArray[currentProcess].arrivalTime == x) // made it while not if, because I want the parent process not to procced until it, finishes the current x
         {
@@ -126,4 +127,3 @@ void clearResources(int signum)
     //     exit(0);
     //     signal( SIGINT, clearResources);
 }
-
