@@ -49,6 +49,7 @@ struct Process
     int remainingTime;
     int flagLast;
     ProcessState state;
+    int forkId;
 };
 typedef struct Process Process;
 
@@ -61,6 +62,8 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->runTime = runTime;
     p->waitingTime = 0;
     p->flagLast = 0;
+    p->forkId=0;
+    p->remainingTime=runTime;
     return p;
 }
 
