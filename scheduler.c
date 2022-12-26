@@ -1,4 +1,5 @@
 #include "PriorityQueue.h"
+#include "CircQueue.h"
 //  TODO sort queue to arrival time
 int runningFlag = 0;
 int pidTracker[100];
