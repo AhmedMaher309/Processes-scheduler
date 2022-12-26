@@ -8,25 +8,29 @@ int runningProcessID;
 int currentIsFinished = -1;
 Process * processPtr = NULL;
 
-
 void handler(int signum)
+{
+    runningFlag = 0;
+}
+void hpfHandler(int signum)
 {
     runningFlag = 0;
     if(currentIsFinished == 1)
     {
-        printf("A process has been terminated normally\n");
+        printf("A process has been terminated normally");
+        printf(" at time %d\n", getClk());
         if (processPtr != NULL)
         {
-         //  insert_by_priority(processPtr);
-           printf("process %d",processPtr->id);
-           printf(" inserted again\n");
            processPtr = NULL;
         }
     }
     else{
-        printf("A process has been preempted\n");
+        printf("process %d",processPtr->id);
+        printf(" has been preempted");
+        printf(" at time %d\n",getClk());
         display_pqueue();
         insert_by_priority(processPtr);
+        processPtr = NULL;
         currentIsFinished = 1;
     }
 
@@ -129,30 +133,27 @@ void hpfAlgorithm()
     int RC, clk, receiveState,queuId,msgNum;
     struct msqid_ds buf;
     Process processToRun;
-    signal(SIGCHLD, handler);
+    signal(SIGCHLD, hpfHandler);
     printf("Im in HPF now\n");
     while(true)
     {
         fflush(stdout);
         clk = getClk();
         sleep(1);
-        printf("Current Time is %d\n", clk);
-        //sleep(1);
         clk = getClk();
         queuId = intMsgQueue(QKEY);
         Process recProcess = recieveProcess(queuId, &receiveState);
         if (receiveState != -1)
         {
-            //printf("remain time %d\n", recProcess.remainingTime);
+            printf("at time %d", getClk());
+            printf(" process %d",recProcess.id);
+            printf(" was received\n");
             lastFlag = recProcess.flagLast;
-            printf("id of the received process is: %d", recProcess.id);
-            printf(" and its flag is: %d\n",recProcess.flagLast);
             if(processPtr == NULL)
             {
                 insert_by_priority(&recProcess);
             }
             else{
-                printf("there was a process running, we will stop it using sigstop\n");
                 currentIsFinished = 0;
                 kill(processPtr->forkingID, SIGSTOP);
                 printf("we stopped process %d\n",processPtr->id);
@@ -163,13 +164,14 @@ void hpfAlgorithm()
         msgNum = buf.msg_qnum;
 
         while (msgNum != 0){
-            printf("Current Time is %d\n", clk);
+            printf("Current Time is %d\n", getClk());
             recProcess = recieveProcess(queuId, &receiveState);
             if (receiveState != -1)
             {
+                printf("at time %d", getClk());
+                printf(" process %d",recProcess.id);
+                printf(" was received\n");
                 lastFlag = recProcess.flagLast;
-                printf("id of the received process is: %d", recProcess.id);
-                printf(" and its flag is: %d\n",recProcess.flagLast);
                 if(processPtr == NULL)
                 {
                     insert_by_priority(&recProcess);
@@ -179,7 +181,6 @@ void hpfAlgorithm()
                     printf("there was a process running, we will stop it using sigstop\n");
                     currentIsFinished = 0;
                     kill(processPtr->forkingID, SIGSTOP);
-                    printf("we stopped process %d\n",processPtr->id);
                     insert_by_priority(&recProcess);
                 }
             RC = msgctl(queuId,IPC_STAT, &buf);
@@ -188,16 +189,12 @@ void hpfAlgorithm()
         }
         if(!runningFlag && !isEmpty())
         {
-            display_pqueue();
-            printf("Current Time is %d\n", clk);
             runningFlag = 1;
+            display_pqueue();
             processToRun = popQueue();
             processPtr = &processToRun;
             processToRun.state = started;
             processToRun.startingTime = getClk();
-            printf("process forking id = %d\n", processToRun.forkingID);
-
-            // the process hasn't been forked before
             if (processToRun.forkingID == -1)
             {
                 char remain[10];
@@ -207,20 +204,31 @@ void hpfAlgorithm()
                 if(runningProcessID != 0)
                 {
                     processToRun.forkingID = runningProcessID;
+                    printf("process is %d", processToRun.id);
+                    printf(" resumed running at time %d\n",getClk());
                 }
                 if (runningProcessID == 0)
                 {
-                    printf("im in the forking\n");
-                    printf("the running process is %d\n", processToRun.id);
+                    printf("the running process is %d", processToRun.id);
+                    printf(" at time %d\n",getClk());
                     run("process", remain, NULL);
                 }
+                processToRun.remainingTime--;
             }
 
             // the process has been forked before
             else{
                 printf("lets continue the process with id %d\n", processToRun.id);
+                printf("this process forking id is %d\n",processToRun.forkingID);
                 processToRun.state = running;
                 kill(processToRun.forkingID, SIGCONT);
+                while(processToRun.remainingTime>0)
+                {
+                    processToRun.remainingTime--;
+                    printf("process %d",processToRun.id);
+                    printf(" is running...\n");
+                    sleep(1);
+                }
                 runningProcessID = processToRun.forkingID;
             }
         }
