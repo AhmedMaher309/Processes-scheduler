@@ -1,4 +1,5 @@
 #include "PriorityQueue.h"
+#include "MultiCircQueue.h"
 //  TODO sort queue to arrival time
 int runningFlag = 0;
 int pidTracker[100];
@@ -105,6 +106,64 @@ void rrAlgorithm(int quantum)
    int lastFlag=0;
    if (!isEmpty())
    
+
+}
+
+void mlfqAlgorithm(int quantum){
+    int lastflag = 0;
+    int rc;
+    int x;
+    int rState;
+    circQueue* MLFQ[11];
+    int message_num;
+    Process recievedProcess;
+    Process finishedProcess;
+    for (int i = 0; i<11; i++){
+        MLFQ[i] = CreateQueueM();
+    }
+    fflush(stdout);
+    while(!lastflag){
+        signal(SIGCHLD, handler);
+        fflush(stdout);
+        sleep(1);
+        x = getClk();
+        int queueId = intMsgQueue(QKEY);
+        struct msqid_ds buf;
+        sleep(0.02);
+        recievedProcess = recieveProcess(queueId, &rState);
+        enQueue(MLFQ[recievedProcess.priority],recievedProcess);
+        rc = msgctl(queueId, IPC_STAT, &buf);
+        message_num = buf.msg_qnum;
+        while (message_num != 0)
+        {
+            sleep(0.01);
+            recievedProcess = recieveProcess(queueId, &rState);
+            printf("id of recieved process: %d\n", recievedProcess.id);
+            if (rState != -1)
+            {
+                enQueue(MLFQ[recievedProcess.priority],recievedProcess);
+                rc = msgctl(queueId, IPC_STAT, &buf);
+                message_num = buf.msg_qnum;
+            }
+        } 
+        if(!runningFlag && !isEmpty()){
+            for(int i = 0; i<11; i++){
+                while(isEmptyQueueM(MLFQ[i]) == 0){
+                    finishedProcess = deQueueM(MLFQ[i]);
+                    if(finishedProcess.forkid == 0){
+                        int pid =fork();
+                        if(pid==0){
+                            run("process",remain,NULL);
+                        }
+                    }
+                    else{
+
+                    }
+                }
+            }
+        }
+
+    }
 
 }
 
