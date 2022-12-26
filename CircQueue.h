@@ -2,7 +2,7 @@
 
 #define SIZE 100
 
-struct Process circ_que[SIZE];
+Process circ_que[SIZE];
 int front = -1, rear = -1;
 
 // Check if the queue is full
@@ -18,22 +18,22 @@ int isEmptyQueue() {
 }
 
 // Adding an process
-void enQueue(struct Process * process) {
+int enQueue(Process * process) {
   if (isFull())
-    printf("\n Queue is full!! \n");
+    return -1;
   else {
     if (front == -1) front = 0;
     rear = (rear + 1) % SIZE;
     circ_que[rear] = *process;
-    printf("\n Inserted -> %d \n", process->id);
+    return 0;
   }
 }
 
 // Removing an element
-int deQueue() {
-  struct Process element;
-  if (isEmpty()) {
-    printf("\n Queue is empty !! \n");
+Process deQueue() {
+  Process element;
+  if (isEmptyQueue()) {
+    //printf("\n Queue is empty !! \n");
     return (-1);
   } else {
     element = circ_que[front];
@@ -46,15 +46,15 @@ int deQueue() {
     else {
       front = (front + 1) % SIZE;
     }
-    printf("\n Deleted element is the one with id -> %d \n", element.id);
-    return (element.id);
+    //printf("\n Deleted element is the one with id -> %d \n", element.id);
+    return element
   }
 }
 
 // Display the queue
 void display() {
   int i;
-  if (isEmpty())
+  if (isEmptyQueue())
     printf(" \n Empty Queue\n");
   else {
     printf("\n Front -> %d ", front);
