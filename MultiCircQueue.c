@@ -32,19 +32,19 @@ int isEmptyQueueM(circQueue* Queue) {
 }
 
 // Adding an process
-void enQueueM(circQueue* Queue, Process* process) {
+int enQueueM(circQueue* Queue, Process* process) {
   if (isFullM(Queue))
-    printf("\n Queue is full!! \n");
+    return -1;
   else {
     if (Queue->front == -1) Queue->front = 0;
     Queue->rear = (Queue->rear + 1) % SIZE;
     Queue->circ_que[Queue->rear] = process;
-    printf("\n Inserted -> %d \n", process);
+    return 0;
   }
 }
 
 // Removing an element
-int deQueueM(circQueue* Queue) {
+Process deQueueM(circQueue* Queue) {
   Process element;
   if (isEmptyQueueM(Queue)) {
     printf("\n Queue is empty !! \n");
@@ -61,7 +61,7 @@ int deQueueM(circQueue* Queue) {
       Queue->front = (Queue->front + 1) % SIZE;
     }
     printf("\n Deleted element is the one with id -> %d \n", element.id);
-    return (element.id);
+    return element;
   }
 }
 

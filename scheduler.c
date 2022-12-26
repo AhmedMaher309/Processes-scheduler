@@ -1,5 +1,6 @@
 #include "PriorityQueue.h"
 #include "CircQueue.h"
+#include "MultiCircQueue.h"
 //  TODO sort queue to arrival time
 int runningFlag = 0;
 int pidTracker[100];
@@ -256,11 +257,12 @@ void mlfqAlgorithm(int quantum){
     int lastflag = 0;
     int rc;
     int x;
-    int rState;
+    int rState, qState;
     circQueue* MLFQ[11];
     int message_num;
-    Process recievedProcess;
-    Process finishedProcess;
+    int currentPriority = 0;
+    Process recievedProcess,finishedProcess;
+    int aProcessFinished = 0;
     for (int i = 0; i<11; i++){
         MLFQ[i] = CreateQueueM();
     }
@@ -271,19 +273,6 @@ void mlfqAlgorithm(int quantum){
         sleep(1);
         x=getClk();
         int queueId= intMsgQueue(QKEY);
-        // Process recievedProcess=recieveProcess(queueId, &rState);
-        // if (rState!=-1)
-        // {
-        //     //todo: insert in the circular queue
-        //     qState=enQueue(&recievedProcess);
-        // }
-
-
-        //If there are multiple processes in the queue it will enter the while loop
-        //Else it will work on the already recievedProcess above
-        
-        
-        //while loop to recieve
         struct msqid_ds buf;
         rc = msgctl(queueId, IPC_STAT, &buf);
         int message_num = buf.msg_qnum;
@@ -295,64 +284,55 @@ void mlfqAlgorithm(int quantum){
             if (rState != -1)
             {
                 //todo: insert in the circular queue
-                qState=enQueue(&recievedProcess);
+                qState=enQueueM(MLFQ[recievedProcess.priority],&recievedProcess);
                 rc = msgctl(queueId, IPC_STAT, &buf);
                 message_num = buf.msg_qnum;
             }
         }
-        if (aProcessFinished)
-        {
-            qState=enQueue(&finishedProcess);
-            aProcessFinished=0;
+
+        if(aProcessFinished){
+            qState = enQueueM(MLFQ[finishedProcess.priority + 1],&finishedProcess);
         }
 
-        //The size of circ queue must be size of the processes
-    
-        //while loop in the scheduler to compare quantum with current time remainder
-        //then decide whether to 
-
-        //Enqueue all processes in the circular queue (the rear will move)
-        //until the msg queue is empty
-        if (!isEmptyQueue() && !runningFlag)
-        {
-            finishedProcess=deQueue();
-            finishedProcess.state=running;
-            lastFlag=finishedProcess.flagLast;
+        if(isEmptyQueueM(MLFQ[currentPriority])){
+            if(currentPriority != 10){
+                currentPriority++;
+            }
+            else{
+                currentPriority = 0;
+            }
+        }
+        if(!isEmptyQueueM(MLFQ[currentPriority]) && !runningFlag){
+            finishedProcess = deQueueM(MLFQ[currentPriority]);
+            finishedProcess.state = running;
+            if(!lastflag) lastflag = finishedProcess.flagLast;
             char remaining[10];
-            
-            runningFlag=1;            
-              /*
-                if rt =< quantum -> send remainingTime and don't put it back in the queue
-                if rt > quantum -> mark it as returning back to the queue
-            */
-            if (finishedProcess.remainingTime>quantum) aProcessFinished=1;           
-                //This will tell us that the process is returning again to the queue
-    
-            sprintf(remaining,"%d",finishedProcess.remainingTime);
-          
-            if (finishedProcess.forkId==0)
-            {
-                int pid=fork();
-                if (pid==0) run("process",remaining,NULL);
-                else 
-                    finishedProcess.forkId=pid;              
+
+            runningFlag = 1;
+
+            sprintf(remaining, "%d", finishedProcess.remainingTime);
+
+            if(finishedProcess.forkId == 0){
+                int pid = fork();
+                if(pid == 0) run("process", remaining,NULL);
+                else{
+                    finishedProcess.forkId = pid;
+                }
             }
-            else
-            {
-                kill(finishedProcess.forkId,SIGCONT);
+            else{
+                kill(finishedProcess.forkId, SIGCONT);
             }
-            
-            x=getClk()
-            while ( (getClk()-x) != quantum)
-            {
+
+            x = getClk();
+            int q = quantum * (currentPriority + 1);
+            if(finishedProcess.remainingTime<q) q =finishedProcess.remainingTime;
+            while((getClk() - x) != q) {
                 sleep(1);
-                finishedProcess.remainingTime-=1;
-                printf("Current Time is %d\n", x);
+                finishedProcess.remainingTime--;
             }
 
             sleep(0.01);
             kill(finishedProcess.forkId,SIGSTOP);
-
         }
         
     }
@@ -374,6 +354,9 @@ int main(int argc, char *argv[])
     {
         rrAlgorithm(atoi(argv[1]));
         // printf("I")
+    }
+    else if(chosenAlgorithm == MLFL){
+        mlfqAlgorithm(atoi(argv[1]));
     }
 
     // TODO: implement the scheduler.

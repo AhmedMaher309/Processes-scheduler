@@ -2,6 +2,7 @@
     "files.associations": {
         "*.ejs": "html",
         "string.h": "c",
-        "stat.h": "c"
+        "stat.h": "c",
+        "circqueue.h": "c"
     }
 }
