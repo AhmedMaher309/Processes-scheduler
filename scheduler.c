@@ -252,6 +252,112 @@ void rrAlgorithm(int quantum)
     printf("Is empty out of while= %d\n",isEmptyQueue());
 }
 
+void mlfqAlgorithm(int quantum){
+    int lastflag = 0;
+    int rc;
+    int x;
+    int rState;
+    circQueue* MLFQ[11];
+    int message_num;
+    Process recievedProcess;
+    Process finishedProcess;
+    for (int i = 0; i<11; i++){
+        MLFQ[i] = CreateQueueM();
+    }
+    fflush(stdout);
+    while(!lastflag){
+        signal(SIGCHLD, handler);
+        fflush(stdout);
+        sleep(1);
+        x=getClk();
+        int queueId= intMsgQueue(QKEY);
+        // Process recievedProcess=recieveProcess(queueId, &rState);
+        // if (rState!=-1)
+        // {
+        //     //todo: insert in the circular queue
+        //     qState=enQueue(&recievedProcess);
+        // }
+
+
+        //If there are multiple processes in the queue it will enter the while loop
+        //Else it will work on the already recievedProcess above
+        
+        
+        //while loop to recieve
+        struct msqid_ds buf;
+        rc = msgctl(queueId, IPC_STAT, &buf);
+        int message_num = buf.msg_qnum;
+        while (message_num != 0)
+        {
+            sleep(0.01);
+            recievedProcess = recieveProcess(queueId, &rState);
+            printf("id of recieved process: %d\n", recievedProcess.id);
+            if (rState != -1)
+            {
+                //todo: insert in the circular queue
+                qState=enQueue(&recievedProcess);
+                rc = msgctl(queueId, IPC_STAT, &buf);
+                message_num = buf.msg_qnum;
+            }
+        }
+        if (aProcessFinished)
+        {
+            qState=enQueue(&finishedProcess);
+            aProcessFinished=0;
+        }
+
+        //The size of circ queue must be size of the processes
+    
+        //while loop in the scheduler to compare quantum with current time remainder
+        //then decide whether to 
+
+        //Enqueue all processes in the circular queue (the rear will move)
+        //until the msg queue is empty
+        if (!isEmptyQueue() && !runningFlag)
+        {
+            finishedProcess=deQueue();
+            finishedProcess.state=running;
+            lastFlag=finishedProcess.flagLast;
+            char remaining[10];
+            
+            runningFlag=1;            
+              /*
+                if rt =< quantum -> send remainingTime and don't put it back in the queue
+                if rt > quantum -> mark it as returning back to the queue
+            */
+            if (finishedProcess.remainingTime>quantum) aProcessFinished=1;           
+                //This will tell us that the process is returning again to the queue
+    
+            sprintf(remaining,"%d",finishedProcess.remainingTime);
+          
+            if (finishedProcess.forkId==0)
+            {
+                int pid=fork();
+                if (pid==0) run("process",remaining,NULL);
+                else 
+                    finishedProcess.forkId=pid;              
+            }
+            else
+            {
+                kill(finishedProcess.forkId,SIGCONT);
+            }
+            
+            x=getClk()
+            while ( (getClk()-x) != quantum)
+            {
+                sleep(1);
+                finishedProcess.remainingTime-=1;
+                printf("Current Time is %d\n", x);
+            }
+
+            sleep(0.01);
+            kill(finishedProcess.forkId,SIGSTOP);
+
+        }
+        
+    }
+}
+
 int main(int argc, char *argv[])
 {
     initClk();
