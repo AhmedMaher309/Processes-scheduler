@@ -1,3 +1,4 @@
+
 #include "headers.h"
 
 #define SIZE 100
@@ -32,10 +33,10 @@ int enQueue(Process * process) {
 // Removing an element
 Process deQueue() {
   Process element;
-  if (isEmptyQueue()) {
-    //printf("\n Queue is empty !! \n");
-    return (-1);
-  } else {
+  // if (isEmptyQueue()) {
+  //   //printf("\n Queue is empty !! \n");
+  //   return -1;
+  // } else {
     element = circ_que[front];
     if (front == rear) {
       front = -1;
@@ -47,8 +48,8 @@ Process deQueue() {
       front = (front + 1) % SIZE;
     }
     //printf("\n Deleted element is the one with id -> %d \n", element.id);
-    return element
-  }
+    return element;
+  // }
 }
 
 // Display the queue

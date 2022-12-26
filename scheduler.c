@@ -16,66 +16,91 @@ void sjfAlgorithm()
     int x;
     int rState;
     fflush(stdout);
-    signal(SIGCHLD, handler);
-    while (!lastFlag)
+    while (1)
     {
+        signal(SIGCHLD, handler);
         fflush(stdout);
-        // x = getClk();
+        x = getClk();
+        printf("Current Time is %d\n", x);
         sleep(1);
         x = getClk();
         int queueId = intMsgQueue(QKEY);
         struct msqid_ds buf;
-        sleep(0.02);
+        sleep(0.2);
         Process recievedProcess = recieveProcess(queueId, &rState);
         if (rState != -1)
         {
             printf("id of recieved process: %d\n", recievedProcess.id);
+            lastFlag = recievedProcess.flagLast;
+            printf("last flag of process %d is %d\n", recievedProcess.id, recievedProcess.flagLast);
             insert_by_priority(&recievedProcess);
         }
         rc = msgctl(queueId, IPC_STAT, &buf);
         int message_num = buf.msg_qnum;
         while (message_num != 0)
         {
-            sleep(0.01);
+            // sleep(0.1);
             recievedProcess = recieveProcess(queueId, &rState);
             printf("id of recieved process: %d\n", recievedProcess.id);
             if (rState != -1)
             {
+                lastFlag = recievedProcess.flagLast;
+                printf("last flag of process %d is %d\n", recievedProcess.id, recievedProcess.flagLast);
                 insert_by_priority(&recievedProcess);
                 rc = msgctl(queueId, IPC_STAT, &buf);
                 message_num = buf.msg_qnum;
             }
         }
 
-        if (!runningFlag && !isEmpty())
+        do
         {
-            display_pqueue();
-            recievedProcess = popQueue();
-            printf("rState = %d \n", rState);
-            display_pqueue();
-            recievedProcess.state = running;
-            int currentProcess = recievedProcess.id;
-            printf("process %d entered\n", recievedProcess.id);
-            lastFlag = recievedProcess.flagLast;
-            char remain[10];
-            sprintf(remain, "%d", recievedProcess.runTime);
-            runningFlag = 1;
-            int processPid = fork();
-            fflush(stdout);
-            if (processPid == 0)
+            if (!runningFlag && !isEmpty())
             {
-                printf("This is the child \n");
-                printf("This is great \n");
-                run("process", remain, NULL);
-            }
-            int stat_loc;
-            processPid = wait(&stat_loc);
-            fflush(stdout);
-            if(!(stat_loc & 0x00FF)){
-                printf("%d has exited successfully\n", currentProcess);
-            }
+                if (lastFlag && !isEmpty())
+                {
+                    printf("Current Time is %d\n", x);
+                }
 
+                display_pqueue();
+                recievedProcess = popQueue();
+                display_pqueue();
+                printf("rState = %d \n", rState);
+                recievedProcess.state = running;
+                int currentProcess = recievedProcess.id;
+                printf("process %d entered\n", recievedProcess.id);
+                // lastFlag = recievedProcess.flagLast;
+                char remain[10];
+                sprintf(remain, "%d", recievedProcess.runTime);
+                runningFlag = 1;
+                int processPid = fork();
+                fflush(stdout);
+                if (processPid == 0)
+                {
+                    printf("This is the child \n");
+                    printf("This is great \n");
+                    fflush(stdout);
+                    run("process", remain, NULL);
+                }
+            }
+            // if (lastFlag && isEmpty())
+            // {
+            //     destroyClk(true);
+            //     break;
+            // }
+
+        } while (!lastFlag && !isEmpty());
+        if (lastFlag && isEmpty())
+        {
+            int lastArriv = getClk();
+            while (getClk() != lastArriv + recievedProcess.runTime + 1)
+            {
+                printf("Current Time is %d\n", getClk());
+                sleep(1);
+            }
+            destroyClk(true);
+            break;
         }
+        //
     }
 }
 
@@ -91,6 +116,7 @@ void rrAlgorithm(int quantum)
     {
         sleep(1);
         x=getClk();
+        printf("Current Time is %d\n", x);
         int queueId= intMsgQueue(QKEY);
         // Process recievedProcess=recieveProcess(queueId, &rState);
         // if (rState!=-1)
@@ -163,7 +189,7 @@ void rrAlgorithm(int quantum)
                 kill(finishedProcess.forkId,SIGCONT);
             }
             
-            x=getClk()
+            x=getClk();
             while ( (getClk()-x) != quantum)
             {
                 sleep(1);
@@ -225,3 +251,6 @@ int main(int argc, char *argv[])
     kill(getppid(), SIGINT);
     return 0;
 }
+
+
+

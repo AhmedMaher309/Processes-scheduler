@@ -15,7 +15,7 @@ int getNumberOfLines(char *fileName)
         temp = getc(filePtr);
     }
     fclose(filePtr);
-    return count - 1;
+    return count ;
 }
 
 void readInputFiles(char *fileName, Process *processArray, int processCount)
@@ -25,25 +25,24 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
     fscanf(filePtr, "%*[^\n]\n");
     for (int i = 0; i < processCount; i++)
     {
-        processArray[i]=*createProcess(0,0,0,0);
+        processArray[i] = *createProcess(0, 0, 0, 0);
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
     }
     fclose(filePtr);
 }
 
-
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, clearResources);
-    // TODO Initialization
-    // 1. Read the input files.
+    // signal(SIGINT, clearResources);
+    //  TODO Initialization
+    //  1. Read the input files.
 
     char *fileName = argv[1];
     int processCount = getNumberOfLines(fileName);
     Process processArray[processCount];
     readInputFiles(fileName, processArray, processCount);
-
+    printf("process count = %d\n", processCount);
     //  2. Read the chosen scheduling algorithm and its parameters, if there are any from the argument list.
     //  3. Initiate and create the scheduler and clock processes.
     //  4. Use this function after creating the clock process to initialize clock.
@@ -75,7 +74,6 @@ int main(int argc, char *argv[])
         }
     }
 
-
     //  To get time use this function.
     int x;
     int currentProcess = 0;
@@ -85,25 +83,24 @@ int main(int argc, char *argv[])
     // TODO Generation Main Loop
     while (currentProcess < processCount)
     {
-        x = getClk();
+        // x = getClk();
         sleep(1);
         x = getClk();
-        printf("Current Time is %d\n", x);
-        fflush(stdout);// 6. Send the information to the scheduler at the appropriate time.
+        //printf("Current Time is %d\n", x);
+        fflush(stdout);                                       // 6. Send the information to the scheduler at the appropriate time.
         while (processArray[currentProcess].arrivalTime == x) // made it while not if, because I want the parent process not to procced until it, finishes the current x
         {
-            printf("process number %d\n",currentProcess);
-            printf("process count %d\n",processCount);
+            printf("process number %d\n", processArray[currentProcess].id);
+            // printf("process count %d\n", processCount);
 
-            if (currentProcess == processCount - 1){
-                    processArray[currentProcess].flagLast = 1;
-                    printf("%d is last flag", processArray[currentProcess].flagLast);
-                }
+            if (currentProcess == processCount - 1)
+            {
+                processArray[currentProcess].flagLast = 1;
+                printf("%d is last flag", processArray[currentProcess].flagLast);
+            }
             sendProcess(processArray[currentProcess], msgqId);
             currentProcess++;
         }
-
-
     }
     // 7. Clear clock resources
     int finished, stat_loc;
@@ -114,18 +111,19 @@ int main(int argc, char *argv[])
         printf("%d ", stat_loc >> 8);
     }
 
-    //destroyClk(true);
+    destroyClk(true);
 }
 
 void clearResources(int signum)
 {
-    // TODO Clears all resources in case of interruption
-    //Delete the queue
-    //Destroy the clk
-    //Call clear resources handler instead of destroyClk(true)
-    
-    kill(clockPid, SIGINT);
-    printf("Process_generator of PID = %d exited\n", getpid());
-    exit(0);
-    signal( SIGINT, clearResources);
+    //     // TODO Clears all resources in case of interruption
+    //     //Delete the queue
+    //     //Destroy the clk
+    //     //Call clear resources handler instead of destroyClk(true)
+
+    //     kill(clockPid, SIGINT);
+    //     printf("Process_generator of PID = %d exited\n", getpid());
+    //     exit(0);
+    //     signal( SIGINT, clearResources);
 }
+
