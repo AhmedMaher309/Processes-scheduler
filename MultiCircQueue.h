@@ -64,9 +64,6 @@ Process deQueueM(circQueue* Queue) {
     
     return element;
 }
-
-// Display the queue
-void displayM(circQueue* Queue) {
   int i;
   if (isEmptyQueueM(Queue))
     printf(" \n Empty Queue\n");
@@ -79,4 +76,3 @@ void displayM(circQueue* Queue) {
     printf("%d ", Queue->circ_que[i].id);
     printf("\n Rear -> %d \n", Queue->rear);
   }
-}
