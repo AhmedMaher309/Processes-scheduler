@@ -46,6 +46,8 @@ struct Process
     int priority;
     int startingTime;
     int waitingTime;
+    int realTime;
+    int isBoosted;
     int remainingTime;
     int flagLast;
     ProcessState state;
@@ -66,6 +68,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->forkId=0;
     p->remainingTime=runTime;
     p->forkingID = -1;
+    p->isBoosted = 0;
     return p;
 }
 

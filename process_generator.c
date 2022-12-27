@@ -29,6 +29,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
         processArray[i].remainingTime = processArray[i].runTime;
+        processArray[i].realTime = processArray[i].runTime;
     }
     fclose(filePtr);
 }
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
 
     char *fileName = argv[1];
     int processCount = getNumberOfLines(fileName);
+    printf("Process Count: %d\n",processCount);
     Process processArray[processCount];
     readInputFiles(fileName, processArray, processCount);
     printf("process count = %d\n", processCount);
@@ -112,6 +114,8 @@ int main(int argc, char *argv[])
         printf("%d ", stat_loc >> 8);
     }
 
+    struct msqid_ds buf;
+    msgctl(msgqId, IPC_RMID, &buf);
     destroyClk(true);
 }
 
@@ -121,9 +125,9 @@ void clearResources(int signum)
     //     //Delete the queue
     //     //Destroy the clk
     //     //Call clear resources handler instead of destroyClk(true)
-
-    //     kill(clockPid, SIGINT);
-    //     printf("Process_generator of PID = %d exited\n", getpid());
-    //     exit(0);
-    //     signal( SIGINT, clearResources);
+        // int msgctl ( int msqid, int cmd, struct msqid_ds *buf );
+        kill(clockPid, SIGINT);
+        printf("Process_generator of PID = %d exited\n", getpid());
+        exit(0);
+        signal( SIGINT, clearResources);
 }
