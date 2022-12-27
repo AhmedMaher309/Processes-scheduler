@@ -1,38 +1,29 @@
+
 #include "headers.h"
 
 /* Modify this file as needed*/
-int remainingtime;
-int currentClk = 0;
-
+// int remainingtime;
+// int currentClk = 0;
 
 int main(int agrc, char *argv[])
 {
     initClk();
+    // printf("in process.c \n");
+    // TODO The process needs to get the remaining time from somewhere
+    // remainingtime = ??;
 
-    //TODO The process needs to get the remaining time from somewhere
-    //remainingtime = ??;
-    while (remainingtime > 0)
+    int runTime = atoi(argv[0]);
+    // printf("the runtime of the process %d \n", runTime);
+    int intialRunTime = runTime;
+    while (runTime > 0)
     {
-        initClk();
-        remainingtime = atoi(argv[1]);
 
-        currentClk = getClk();
-        while (remainingtime > 0)
-        {
-
-            // save the currentclk to be always equal to actual clk and reduce the remainingtime
-            if (currentClk < getClk())
-            {
-                currentClk = getClk();
-                remainingtime--;
-            }
-        }
+        runTime--;
+        sleep(1);
     }
-
+    printf("Process done\n");
+    // sleep(0.01);
     destroyClk(false);
-
     return 0;
 }
-
-
 
