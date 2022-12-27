@@ -46,7 +46,7 @@ struct Process
     int priority;
     int startingTime;
     int waitingTime;
-    int realTime;
+    //int realTime;
     int isBoosted;
     int remainingTime;
     int flagLast;
@@ -65,8 +65,8 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->runTime = runTime;
     p->waitingTime = 0;
     p->flagLast = 0;
-    p->forkId=0;
-    p->remainingTime=runTime;
+    p->forkId = 0;
+    p->remainingTime = runTime;
     p->forkingID = -1;
     p->isBoosted = 0;
     return p;
@@ -179,6 +179,5 @@ Process recieveProcess(int queueId, int *state)
     *state = msgrcv(queueId, &msg, sizeof(msg.process), 0, IPC_NOWAIT);
     return msg.process;
 }
-
 
 #endif
