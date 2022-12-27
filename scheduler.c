@@ -254,24 +254,29 @@ void rrAlgorithm(int quantum)
 }
 
 void mlfqAlgorithm(int quantum){
-    int lastflag = 0;
+    int lastFlag = 0;
     int rc;
     int x;
     int rState, qState;
+    int lastLoop = 0;
     circQueue* MLFQ[11];
     int message_num;
     int currentPriority = 0;
+    runningFlag = 0;
     Process recievedProcess,finishedProcess;
     int aProcessFinished = 0;
     for (int i = 0; i<11; i++){
         MLFQ[i] = CreateQueueM();
     }
+    int AllEmpty = 1;
     fflush(stdout);
-    while(!lastflag){
+    while(!lastFlag || runningFlag || !(AllEmpty) || aProcessFinished){
+        int q = quantum * (currentPriority + 1);
         signal(SIGCHLD, handler);
         fflush(stdout);
         sleep(1);
         x=getClk();
+        printf("Current time is %d\n",x);
         int queueId= intMsgQueue(QKEY);
         struct msqid_ds buf;
         rc = msgctl(queueId, IPC_STAT, &buf);
@@ -285,54 +290,126 @@ void mlfqAlgorithm(int quantum){
             {
                 //todo: insert in the circular queue
                 qState=enQueueM(MLFQ[recievedProcess.priority],&recievedProcess);
+                if(recievedProcess.priority<currentPriority) currentPriority = recievedProcess.priority;
+                printf("enqueued in queue number %d\n",recievedProcess.priority);
+                //printf("state of queue %d is %d\n",recievedProcess.priority,isEmptyQueueM(MLFQ[recievedProcess.priority]));
                 rc = msgctl(queueId, IPC_STAT, &buf);
                 message_num = buf.msg_qnum;
             }
         }
 
+        for(int i = 0; i<11; i++){
+            if(!isEmptyQueueM(MLFQ[i])){
+                AllEmpty = 0;
+                currentPriority = i;
+                break;
+            }
+            AllEmpty = 1;
+        }
+        printf("is All Empty %d\n",AllEmpty);
+
         if(aProcessFinished){
-            qState = enQueueM(MLFQ[finishedProcess.priority + 1],&finishedProcess);
+            printf("Process %d was enqueued in the priority %d\n",finishedProcess.id,finishedProcess.priority + 1);
+            // if(finishedProcess.waitingTime>=20 && !finishedProcess.isBoosted){
+            //     printf("process %d got boosted\n",finishedProcess.id);
+            //     finishedProcess.isBoosted = 1;
+            //     qState = enQueueM(MLFQ[currentPriority - 1],&finishedProcess);
+            //     currentPriority--;
+            // }
+            // else{
+                if(currentPriority < 10){
+                    qState = enQueueM(MLFQ[currentPriority + 1],&finishedProcess);
+                }
+                else{
+                    qState = enQueueM(MLFQ[10],&finishedProcess);
+                }
+            // }
+            aProcessFinished = 0;
         }
 
+        printf("state of queue %d is %d\n",currentPriority,isEmptyQueueM(MLFQ[currentPriority]));
         if(isEmptyQueueM(MLFQ[currentPriority])){
-            if(currentPriority != 10){
-                currentPriority++;
+            if(!AllEmpty){
+                if(currentPriority != 10){
+                    printf("Moving on to Queue Number %d\n",currentPriority + 1);
+                    currentPriority++;
+                }
+                else{
+                    currentPriority = 0;
+                }
+                q = quantum * (currentPriority + 1);
             }
-            else{
-                currentPriority = 0;
-            }
+
         }
+
+        // for(int i = 0; i<currentPriority; i++){
+        //     if(!isEmptyQueueM(MLFQ[i])){
+        //         currentPriority = i;
+        //         break;
+        //     }
+        // }
+
         if(!isEmptyQueueM(MLFQ[currentPriority]) && !runningFlag){
             finishedProcess = deQueueM(MLFQ[currentPriority]);
-            finishedProcess.state = running;
-            if(!lastflag) lastflag = finishedProcess.flagLast;
-            char remaining[10];
-
-            runningFlag = 1;
-
-            sprintf(remaining, "%d", finishedProcess.remainingTime);
-
-            if(finishedProcess.forkId == 0){
-                int pid = fork();
-                if(pid == 0) run("process", remaining,NULL);
-                else{
-                    finishedProcess.forkId = pid;
-                }
+            finishedProcess.waitingTime = (getClk() - finishedProcess.arrivalTime - (finishedProcess.realTime - finishedProcess.remainingTime) - 1);
+            if(finishedProcess.waitingTime>=20 && !finishedProcess.isBoosted){
+                printf("process %d got boosted\n",finishedProcess.id);
+                finishedProcess.isBoosted = 1;
+                qState = enQueueM(MLFQ[currentPriority - 1],&finishedProcess);
+                currentPriority--;
             }
+            //finishedProcess.waitingTime = 0;
             else{
-                kill(finishedProcess.forkId, SIGCONT);
-            }
+                printf("Waiting time of Process %d is %d\n",finishedProcess.id,finishedProcess.waitingTime);
+                printf("process %d was dequeued\n",finishedProcess.id);
+                finishedProcess.state = running;
+                if(!lastFlag) lastFlag = finishedProcess.flagLast;
+                char remaining[10];
 
-            x = getClk();
-            int q = quantum * (currentPriority + 1);
-            if(finishedProcess.remainingTime<q) q =finishedProcess.remainingTime;
-            while((getClk() - x) != q) {
-                sleep(1);
-                finishedProcess.remainingTime--;
-            }
+                runningFlag = 1;
 
-            sleep(0.01);
-            kill(finishedProcess.forkId,SIGSTOP);
+
+                sprintf(remaining, "%d", finishedProcess.remainingTime);
+
+                if(finishedProcess.forkId == 0){
+
+                    int pid = fork();
+                    if(pid == 0){
+                        run("process", remaining,NULL);
+                    } 
+                    else{
+                        printf("process %d was started\n",finishedProcess.id);
+                        finishedProcess.forkId = pid;
+                    }
+                }
+                else{
+                    printf("process %d was continued\n",finishedProcess.id);
+                    kill(finishedProcess.forkId, SIGCONT);
+                }
+
+                x = getClk();
+                printf("current quantum is %d\n", q);
+                if(finishedProcess.remainingTime<q) {
+                    q = finishedProcess.remainingTime;
+                    if(!(!lastFlag || runningFlag || !(AllEmpty) || aProcessFinished) && !lastLoop){
+                        aProcessFinished = 1;
+                        lastLoop = 1;
+                    }
+                }
+                else{
+                    aProcessFinished = 1;
+                }
+                while((getClk() - x) != q) {
+                    sleep(1);
+                    finishedProcess.remainingTime--;
+                    printf("Current time is %d\n",getClk());
+                }
+
+                sleep(0.01);
+                printf("process %d was stopped\n",finishedProcess.id);
+                kill(finishedProcess.forkId,SIGSTOP);
+                }
+                
         }
         
     }

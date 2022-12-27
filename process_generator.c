@@ -29,6 +29,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
                &(processArray[i].runTime), &(processArray[i].priority));
         processArray[i].remainingTime = processArray[i].runTime;
+        processArray[i].realTime = processArray[i].runTime;
     }
     fclose(filePtr);
 }
@@ -117,13 +118,13 @@ int main(int argc, char *argv[])
 
 void clearResources(int signum)
 {
-    //     // TODO Clears all resources in case of interruption
-    //     //Delete the queue
-    //     //Destroy the clk
-    //     //Call clear resources handler instead of destroyClk(true)
+        // TODO Clears all resources in case of interruption
+        //Delete the queue
+        //Destroy the clk
+        //Call clear resources handler instead of destroyClk(true)
 
-    //     kill(clockPid, SIGINT);
-    //     printf("Process_generator of PID = %d exited\n", getpid());
-    //     exit(0);
-    //     signal( SIGINT, clearResources);
+        kill(clockPid, SIGINT);
+        printf("Process_generator of PID = %d exited\n", getpid());
+        exit(0);
+        signal( SIGINT, clearResources);
 }

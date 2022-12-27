@@ -43,6 +43,8 @@ struct Process
     int id;
     int arrivalTime;
     int runTime;
+    int realTime;
+    int isBoosted;
     int priority;
     int startingTime;
     int waitingTime;
@@ -63,6 +65,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->waitingTime = 0;
     p->flagLast = 0;
     p->forkId=0;
+    p->isBoosted = 0;
     p->remainingTime=runTime;
     return p;
 }
