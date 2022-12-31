@@ -27,7 +27,7 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
     {
         processArray[i] = *createProcess(0, 0, 0, 0);
         fscanf(filePtr, "%d  %d  %d  %d", &(processArray[i].id), &(processArray[i].arrivalTime),
-               &(processArray[i].runTime), &(processArray[i].priority));
+               &(processArray[i].runTime), &(processArray[i].priority), &(processArray[i].memSize));
         processArray[i].remainingTime = processArray[i].runTime;
         //processArray[i].realTime = processArray[i].runTime;
     }
@@ -112,8 +112,11 @@ int main(int argc, char *argv[])
         fflush(stdout);
         printf("%d ", stat_loc >> 8);
     }
+    
 
-    destroyClk(true);
+    
+    destroyClk(true); 
+    clearResources(SIGINT);
 }
 
 void clearResources(int signum)
@@ -124,6 +127,9 @@ void clearResources(int signum)
     //     //Call clear resources handler instead of destroyClk(true)
 
         kill(clockPid, SIGINT);
+        int msgqId = intMsgQueue(QKEY);
+        struct msqid_ds buf;
+        msgctl (msgqId, IPC_RMID, &buf );
         printf("Process_generator of PID = %d exited\n", getpid());
         exit(0);
         signal( SIGINT, clearResources);

@@ -38,6 +38,16 @@ enum Algorithm
     MLFL = 4
 };
 
+
+struct MemoryBlock
+{
+    MemoryBlock* left;
+    MemoryBlock* right;
+    int blockSize;
+};
+typedef struct MemoryBlock MemoryBlock;
+
+
 struct Process
 {
     int id;
@@ -46,11 +56,12 @@ struct Process
     int priority;
     int startingTime;
     int waitingTime;
-    //int realTime;
+    int memSize;
     int isBoosted;
     int remainingTime;
     int flagLast;
     ProcessState state;
+    MemoryBlock* allocatedMem;
     int forkId;
     int forkingID;
 };
