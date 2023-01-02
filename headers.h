@@ -44,6 +44,7 @@ struct MemoryBlock
     MemoryBlock* left;
     MemoryBlock* right;
     int blockSize;
+    int allocated;
 };
 typedef struct MemoryBlock MemoryBlock;
 
@@ -57,7 +58,6 @@ struct Process
     int startingTime;
     int waitingTime;
     int memSize;
-    int isBoosted;
     int remainingTime;
     int flagLast;
     ProcessState state;
