@@ -41,8 +41,9 @@ enum Algorithm
 
 struct MemoryBlock
 {
-    MemoryBlock* left;
-    MemoryBlock* right;
+    struct MemoryBlock* left;
+    struct MemoryBlock* right;
+    struct MemoryBlock* parent;
     int blockSize;
     int allocated;
 };
@@ -79,7 +80,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->forkId = 0;
     p->remainingTime = runTime;
     p->forkingID = -1;
-    p->isBoosted = 0;
+    // p->isBoosted = 0;
     return p;
 }
 
@@ -175,18 +176,21 @@ void sendProcess(Process sProcess, int queueId)
 {
     msgbuff msg;
     msg.process = sProcess;
+    printf("Queue id of SENT=%d\n",queueId);
+    printf("Size of sent process= %ld\n",sizeof(msg.process));
     int sendStatus = msgsnd(queueId, &msg, sizeof(msg.process), !IPC_NOWAIT);
 
     if (sendStatus == -1)
     {
-        perror("Error in sending in queue: ");
+        // perror("Error in sending in queue: ");
     }
 }
 
 Process recieveProcess(int queueId, int *state)
 {
     msgbuff msg;
-
+    printf("Size of recieved process= %ld\n",sizeof(msg.process));
+    printf("Queue id of recieved=%d\n",queueId);
     *state = msgrcv(queueId, &msg, sizeof(msg.process), 0, IPC_NOWAIT);
     return msg.process;
 }

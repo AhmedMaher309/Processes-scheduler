@@ -26,8 +26,10 @@ void readInputFiles(char *fileName, Process *processArray, int processCount)
     for (int i = 0; i < processCount; i++)
     {
         processArray[i] = *createProcess(0, 0, 0, 0);
-        fscanf(filePtr, "%d %d %d %d %d", &(processArray[i].id), &(processArray[i].arrivalTime),
-               &(processArray[i].runTime), &(processArray[i].priority), &(processArray[i].memSize));
+        // fscanf(filePtr, "%d %d %d %d %d", &(processArray[i].id), &(processArray[i].arrivalTime),
+        //        &(processArray[i].runTime), &(processArray[i].priority), &(processArray[i].memSize));
+         fscanf(filePtr, "%d %d %d %d", &(processArray[i].id), &(processArray[i].arrivalTime),
+               &(processArray[i].runTime), &(processArray[i].priority));
         processArray[i].remainingTime = processArray[i].runTime;
         //processArray[i].realTime = processArray[i].runTime;
     }

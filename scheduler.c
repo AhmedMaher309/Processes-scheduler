@@ -1,7 +1,7 @@
 #include "PriorityQueue.h"
 #include "CircQueue.h"
 #include "MultiCircQueue.h"
-#include "MemoryTree.h"
+// #include "MemoryTree.h"
 //  TODO sort queue to arrival time
 int runningFlag = 0;
 int pidTracker[100];
@@ -627,7 +627,7 @@ int main(int argc, char *argv[])
         printf("**************************************");
     }
     else if(chosenAlgorithm == MLFL){
-        mlfqAlgorithm(atoi(argv[1]));
+        //mlfqAlgorithm(atoi(argv[1]));
     }
     lagTime =
     // TODO: implement the scheduler.
