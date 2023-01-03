@@ -46,9 +46,29 @@ struct MemoryBlock
     struct MemoryBlock* parent;
     int blockSize;
     int allocated;
+    int startLoc;
+    int endLoc;
 };
 typedef struct MemoryBlock MemoryBlock;
 
+
+// struct Process
+// {
+//     int id;
+//     int arrivalTime;
+//     int runTime;
+//     int priority;
+//     int startingTime;
+//     int waitingTime;
+//     int memSize;
+//     int remainingTime;
+//     int flagLast;
+//     ProcessState state;
+//     MemoryBlock* allocatedMem;
+//     int forkId;
+//     int forkingID;
+// };
+// typedef struct Process Process;
 
 struct Process
 {
@@ -56,15 +76,15 @@ struct Process
     int arrivalTime;
     int runTime;
     int priority;
-    int startingTime;
+    // int startingTime;
     int waitingTime;
     int memSize;
     int remainingTime;
     int flagLast;
-    ProcessState state;
+    // ProcessState state;
     MemoryBlock* allocatedMem;
     int forkId;
-    int forkingID;
+    // int forkingID;
 };
 typedef struct Process Process;
 
@@ -79,7 +99,7 @@ Process *createProcess(int id, int priority, int runTime, int arrivalTime)
     p->flagLast = 0;
     p->forkId = 0;
     p->remainingTime = runTime;
-    p->forkingID = -1;
+    // p->forkingID = -1;
     // p->isBoosted = 0;
     return p;
 }
